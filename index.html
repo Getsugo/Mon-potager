@@ -54,7 +54,7 @@
         <div id="gardenCanvas" class="garden-canvas"></div>
       </div>
     </div>
-    <p class="hint">Glisse une zone pour la déplacer, tire le rond pour la redimensionner, ou touche-la pour saisir les dimensions exactes.</p>
+    <p class="hint">Glisse une zone pour la déplacer, tire le rond pour la redimensionner, ou touche-la pour voir sa fiche de culture.</p>
 
     <details class="legend">
       <summary>Légende des cultures</summary>
@@ -123,6 +123,69 @@
     <div class="modal-footer">
       <button id="zoneDeleteBtn" class="btn btn-danger" hidden>Supprimer</button>
       <button id="zoneSaveBtn" class="btn btn-primary">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODALE FICHE CULTURE -->
+<div id="infoModalOverlay" class="modal-overlay" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <div class="info-hero">
+        <span id="infoEmoji" class="info-hero-emoji">🌱</span>
+        <div>
+          <h2 id="infoName">Plante</h2>
+          <p id="infoVarietyLine" class="info-hero-sub"></p>
+        </div>
+      </div>
+      <button id="infoModalClose" class="icon-btn" aria-label="Fermer">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div id="infoZoneCard" class="info-zone-card"></div>
+
+      <div id="infoFiche">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-item-label">☀️ Exposition</span>
+            <span id="infoSoleil" class="info-item-value">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-item-label">💧 Arrosage</span>
+            <span id="infoArrosage" class="info-item-value">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-item-label">🌡️ Chaleur / serre</span>
+            <span id="infoChaleur" class="info-item-value">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-item-label">🌍 Sol</span>
+            <span id="infoSol" class="info-item-value">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-item-label">📏 Espacement</span>
+            <span id="infoEspacement" class="info-item-value">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-item-label">📅 Semis / plantation</span>
+            <span id="infoSemis" class="info-item-value">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-item-label">🧺 Récolte</span>
+            <span id="infoRecolte" class="info-item-value">—</span>
+          </div>
+        </div>
+        <div class="info-tip">
+          <span class="info-tip-label">💡 Conseil</span>
+          <p id="infoConseil" class="info-tip-text">—</p>
+        </div>
+      </div>
+
+      <p id="infoNotesBlock" class="info-notes" hidden></p>
+
+    </div>
+    <div class="modal-footer">
+      <button id="infoEditBtn" class="btn btn-primary">Modifier la planche</button>
     </div>
   </div>
 </div>

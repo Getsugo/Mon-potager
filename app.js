@@ -28,6 +28,163 @@
     { id: "autre",     name: "Autre",        emoji: "✏️", color: "#6B8E4E" },
   ];
 
+  const PLANT_INFO = {
+    tomate: {
+      soleil: "Plein soleil",
+      arrosage: "Régulier au pied, sans mouiller le feuillage",
+      chaleur: "Aime la chaleur, gélive : serre/tunnel utile en climat frais",
+      sol: "Riche, bien drainé",
+      espacement: "50 à 60 cm",
+      semis: "Semis février-mars, plantation après mi-mai",
+      recolte: "Juillet à octobre",
+      conseil: "Tuteure les pieds et paille le sol pour limiter les maladies et garder l'humidité.",
+    },
+    courgette: {
+      soleil: "Plein soleil",
+      arrosage: "Abondant et régulier, au pied",
+      chaleur: "Aime la chaleur, semis après les dernières gelées",
+      sol: "Riche en humus, bien drainé",
+      espacement: "80 à 100 cm (très volumineuse)",
+      semis: "Semis avril-mai sous abri, ou direct mai-juin",
+      recolte: "Juillet à septembre, cueillette jeune et fréquente",
+      conseil: "Récolte les fruits jeunes et régulièrement : cela relance la production.",
+    },
+    patate: {
+      soleil: "Plein soleil",
+      arrosage: "Modéré, plus soutenu à la formation des tubercules",
+      chaleur: "Craint le gel, pas besoin de serre",
+      sol: "Meuble et drainé, éviter le fumier frais",
+      espacement: "30 cm sur le rang, 60-70 cm entre rangs",
+      semis: "Plantation mars-avril",
+      recolte: "Juin (primeurs) à septembre (conservation)",
+      conseil: "Butte les plants 2 à 3 fois pour protéger les tubercules de la lumière et du gel.",
+    },
+    carotte: {
+      soleil: "Soleil à mi-ombre",
+      arrosage: "Régulier et léger, sol frais en surface",
+      chaleur: "Tolère bien la fraîcheur, pas de serre nécessaire",
+      sol: "Profond, meuble, sans cailloux, éviter le fumier frais",
+      espacement: "3 à 5 cm sur le rang, à éclaircir",
+      semis: "Mars à juillet",
+      recolte: "3 à 4 mois après le semis",
+      conseil: "Éclaircis tôt et bine régulièrement pour éviter que les racines fourchent.",
+    },
+    salade: {
+      soleil: "Mi-ombre en été, soleil au printemps/automne",
+      arrosage: "Régulier et léger, sol toujours frais",
+      chaleur: "Craint les fortes chaleurs (monte en graine), pas de serre l'été",
+      sol: "Riche, frais, bien drainé",
+      espacement: "25 à 30 cm",
+      semis: "Toute l'année par petites vagues échelonnées",
+      recolte: "2 à 3 mois après le semis",
+      conseil: "Sème peu à la fois mais souvent pour échelonner les récoltes.",
+    },
+    oignon: {
+      soleil: "Plein soleil",
+      arrosage: "Modéré, à réduire puis arrêter avant la récolte",
+      chaleur: "Résiste bien au frais, pas de serre nécessaire",
+      sol: "Léger et drainé, éviter le fumier frais",
+      espacement: "10 à 15 cm",
+      semis: "Plantation mars-avril ou octobre",
+      recolte: "Juillet-août, quand le feuillage jaunit et se couche",
+      conseil: "Laisse sécher les bulbes au sol quelques jours avant de les stocker.",
+    },
+    fraise: {
+      soleil: "Plein soleil à mi-ombre légère",
+      arrosage: "Régulier au pied, sans mouiller les fruits",
+      chaleur: "Pas de serre nécessaire, protéger en hiver si froid vif",
+      sol: "Riche, drainé, légèrement acide",
+      espacement: "30 à 40 cm",
+      semis: "Plantation août-octobre ou mars",
+      recolte: "Mai à juillet (ou jusqu'à l'automne pour les remontantes)",
+      conseil: "Paille sous les fruits pour éviter le contact avec la terre et limiter la pourriture.",
+    },
+    haricot: {
+      soleil: "Plein soleil",
+      arrosage: "Modéré, plus soutenu à la floraison",
+      chaleur: "Craint le gel, aime la chaleur",
+      sol: "Léger et drainé, pas trop riche en azote",
+      espacement: "8-10 cm (nain) ou 30-40 cm (à rames)",
+      semis: "Mai à juillet",
+      recolte: "2 à 3 mois après semis, cueillette régulière",
+      conseil: "Tuteure les variétés grimpantes dès la levée pour guider leur croissance.",
+    },
+    poivron: {
+      soleil: "Plein soleil, forte chaleur",
+      arrosage: "Régulier, soutenu en été",
+      chaleur: "Frileux : serre/tunnel conseillé en climat tempéré",
+      sol: "Riche, drainé et réchauffé",
+      espacement: "40 à 50 cm",
+      semis: "Semis février-mars sous abri, plantation en mai",
+      recolte: "Juillet à octobre",
+      conseil: "Pince le bourgeon terminal pour favoriser la ramification et plus de fruits.",
+    },
+    radis: {
+      soleil: "Soleil à mi-ombre",
+      arrosage: "Fréquent et régulier (sinon racines piquantes)",
+      chaleur: "Culture fraîche, monte en graine si trop chaud",
+      sol: "Léger, meuble, frais",
+      espacement: "3 à 5 cm",
+      semis: "Mars à septembre, toutes les 2 semaines",
+      recolte: "3 à 4 semaines après le semis, très rapide",
+      conseil: "Récolte-les jeunes : des radis oubliés trop longtemps deviennent creux et piquants.",
+    },
+    courge: {
+      soleil: "Plein soleil",
+      arrosage: "Abondant et régulier, au pied",
+      chaleur: "Aime la chaleur, gélive",
+      sol: "Très riche (compost), bien drainé",
+      espacement: "1 à 2 m (très envahissante)",
+      semis: "Semis avril-mai sous abri, plantation fin mai",
+      recolte: "Septembre-octobre, avant les gelées",
+      conseil: "Laisse un bout de pédoncule sur le fruit à la récolte : cela améliore sa conservation.",
+    },
+    aubergine: {
+      soleil: "Plein soleil, forte chaleur",
+      arrosage: "Régulier et soutenu en été",
+      chaleur: "Très frileuse : serre/tunnel vivement conseillé",
+      sol: "Riche, drainé et réchauffé",
+      espacement: "50 à 60 cm",
+      semis: "Semis février-mars sous abri chauffé, plantation fin mai",
+      recolte: "Juillet à octobre",
+      conseil: "Limite à 4-6 fruits par pied pour obtenir de belles aubergines bien formées.",
+    },
+    ail: {
+      soleil: "Plein soleil",
+      arrosage: "Faible, arrêter avant la récolte",
+      chaleur: "Résiste bien au froid, pas de serre",
+      sol: "Léger et drainé, éviter le fumier frais",
+      espacement: "10 à 15 cm",
+      semis: "Plantation octobre-novembre (hiver) ou février-mars (printemps)",
+      recolte: "Juin-juillet, quand les feuilles jaunissent",
+      conseil: "Laisse sécher les têtes au soleil quelques jours avant de les stocker.",
+    },
+    petitpois: {
+      soleil: "Plein soleil à mi-ombre",
+      arrosage: "Modéré, surtout à la floraison et formation des gousses",
+      chaleur: "Culture fraîche, craint les fortes chaleurs d'été",
+      sol: "Léger et drainé, pas trop d'azote",
+      espacement: "5 cm sur le rang",
+      semis: "Février à mai (ou septembre en climat doux)",
+      recolte: "Environ 3 mois après le semis",
+      conseil: "Installe un grillage ou des tuteurs dès la levée et récolte souvent pour prolonger la production.",
+    },
+    herbes: {
+      soleil: "Plein soleil à mi-ombre selon l'espèce",
+      arrosage: "Sobre pour les méditerranéennes (thym, romarin), plus régulier pour basilic/menthe/persil",
+      chaleur: "Variable : le basilic est frileux, thym et romarin sont rustiques",
+      sol: "Drainé, plutôt pauvre pour les méditerranéennes",
+      espacement: "20 à 30 cm",
+      semis: "Plantation au printemps",
+      recolte: "Au fil des besoins",
+      conseil: "Pince régulièrement pour favoriser la ramification et retarder la floraison.",
+    },
+  };
+
+  function getPlantInfo(zone) {
+    return PLANT_INFO[zone.plantId] || null;
+  }
+
   /* ===================== État ===================== */
   let state = loadState();
   let activeZoneId = null; // zone en cours d'édition dans la modale
@@ -107,6 +264,25 @@
   const zoneList = el("zoneList");
   const listEmpty = el("listEmpty");
   const addZoneBtn = el("addZoneBtn");
+
+  const infoModalOverlay = el("infoModalOverlay");
+  const infoModalClose = el("infoModalClose");
+  const infoEmoji = el("infoEmoji");
+  const infoName = el("infoName");
+  const infoVarietyLine = el("infoVarietyLine");
+  const infoZoneCard = el("infoZoneCard");
+  const infoFiche = el("infoFiche");
+  const infoSoleil = el("infoSoleil");
+  const infoArrosage = el("infoArrosage");
+  const infoChaleur = el("infoChaleur");
+  const infoSol = el("infoSol");
+  const infoEspacement = el("infoEspacement");
+  const infoSemis = el("infoSemis");
+  const infoRecolte = el("infoRecolte");
+  const infoConseil = el("infoConseil");
+  const infoNotesBlock = el("infoNotesBlock");
+  const infoEditBtn = el("infoEditBtn");
+  let infoZoneId = null;
 
   const zoneModalOverlay = el("zoneModalOverlay");
   const zoneModalTitle = el("zoneModalTitle");
@@ -307,7 +483,7 @@
         if (moved) {
           saveState();
         } else {
-          openZoneModal(zone.id);
+          openInfoModal(zone.id);
         }
       }
       node.addEventListener("pointermove", onMove);
@@ -358,7 +534,7 @@
         </div>
         <span class="zone-card-chev">›</span>
       `;
-      card.addEventListener("click", () => openZoneModal(zone.id));
+      card.addEventListener("click", () => openInfoModal(zone.id));
       zoneList.appendChild(card);
     });
   }
@@ -396,6 +572,60 @@
     });
     customPlantRow.hidden = selectedPlantId !== "autre";
   }
+
+  /* ===================== Modale fiche culture ===================== */
+  function openInfoModal(zoneId) {
+    const zone = state.zones.find(z => z.id === zoneId);
+    if (!zone) return;
+    infoZoneId = zoneId;
+    const plant = getPlant(zone);
+    const info = getPlantInfo(zone);
+
+    infoEmoji.textContent = plant.emoji;
+    infoName.textContent = plant.name;
+    infoVarietyLine.textContent = zone.variety ? zone.variety : "";
+    infoVarietyLine.hidden = !zone.variety;
+
+    let zoneCardHtml = `<strong>${fmtM(zone.w)}×${fmtM(zone.h)} m</strong> · ${(zone.w * zone.h).toFixed(2).replace(".", ",")} m²`;
+    if (zone.date) zoneCardHtml += ` · planté le ${formatDate(zone.date)}`;
+    infoZoneCard.innerHTML = zoneCardHtml;
+
+    if (info) {
+      infoFiche.hidden = false;
+      infoSoleil.textContent = info.soleil;
+      infoArrosage.textContent = info.arrosage;
+      infoChaleur.textContent = info.chaleur;
+      infoSol.textContent = info.sol;
+      infoEspacement.textContent = info.espacement;
+      infoSemis.textContent = info.semis;
+      infoRecolte.textContent = info.recolte;
+      infoConseil.textContent = info.conseil;
+    } else {
+      infoFiche.hidden = true;
+    }
+
+    if (zone.notes) {
+      infoNotesBlock.hidden = false;
+      infoNotesBlock.innerHTML = `<strong>Notes</strong><br>${escapeHtml(zone.notes)}`;
+    } else {
+      infoNotesBlock.hidden = true;
+    }
+
+    infoModalOverlay.hidden = false;
+  }
+
+  function closeInfoModal() {
+    infoModalOverlay.hidden = true;
+    infoZoneId = null;
+  }
+
+  infoModalClose.addEventListener("click", closeInfoModal);
+  infoModalOverlay.addEventListener("click", (e) => { if (e.target === infoModalOverlay) closeInfoModal(); });
+  infoEditBtn.addEventListener("click", () => {
+    const zoneId = infoZoneId;
+    closeInfoModal();
+    openZoneModal(zoneId);
+  });
 
   /* ===================== Modale zone ===================== */
   function openZoneModal(zoneId) {

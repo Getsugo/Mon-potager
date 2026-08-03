@@ -357,6 +357,61 @@ input[type="color"] { width: 44px; height: 40px; padding: 2px; border: 1px solid
 .dims-grid label { font-size: 0.72rem; color: var(--ink-muted); display: flex; flex-direction: column; gap: 4px; }
 .area-preview { font-size: 0.8rem; color: var(--leaf); font-weight: 600; margin: 8px 0 0; }
 
+/* ===== Fiche culture (modale info) ===== */
+.info-hero { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.info-hero-emoji { font-size: 2.1rem; line-height: 1; flex-shrink: 0; }
+.info-hero h2 { margin: 0; font-family: var(--font-display); font-size: 1.15rem; color: var(--soil); }
+[data-theme="dark"] .info-hero h2 { color: var(--ink); }
+.info-hero-sub { margin: 2px 0 0; font-size: 0.78rem; color: var(--ink-muted); }
+
+.info-zone-card {
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+.info-zone-card strong { color: var(--ink); }
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.info-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.info-item-label { font-size: 0.68rem; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.3px; }
+.info-item-value { font-size: 0.85rem; font-weight: 600; color: var(--ink); line-height: 1.35; }
+
+.info-tip {
+  margin-top: 12px;
+  background: color-mix(in srgb, var(--leaf) 14%, var(--bg-card));
+  border: 1px solid var(--leaf-light);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.info-tip-label { font-size: 0.72rem; font-weight: 700; color: var(--leaf); }
+.info-tip-text { margin: 4px 0 0; font-size: 0.85rem; color: var(--ink); line-height: 1.45; }
+
+.info-notes {
+  margin: 14px 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  white-space: pre-wrap;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
 .divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
 .settings-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .version-tag { text-align: center; font-size: 0.72rem; color: var(--ink-muted); margin-top: 24px; }
