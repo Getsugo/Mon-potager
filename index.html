@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Mon Potager</title>
+<meta name="theme-color" content="#4A3626">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-title">
+    <span class="logo-mark" aria-hidden="true">🌱</span>
+    <h1>Mon Potager</h1>
+  </div>
+  <div class="topbar-actions">
+    <button id="themeToggle" class="icon-btn" aria-label="Changer de thème">🌙</button>
+    <button id="settingsBtn" class="icon-btn" aria-label="Réglages">⚙️</button>
+  </div>
+</header>
+
+<div class="stats-strip">
+  <div class="stat">
+    <span id="statSurface" class="stat-value">0 m²</span>
+    <span class="stat-label">Surface</span>
+  </div>
+  <div class="stat">
+    <span id="statPlanted" class="stat-value">0 m²</span>
+    <span class="stat-label">Plantée</span>
+  </div>
+  <div class="stat">
+    <span id="statZones" class="stat-value">0</span>
+    <span class="stat-label">Zones</span>
+  </div>
+</div>
+
+<nav class="tabs" role="tablist">
+  <button class="tab active" data-tab="plan" role="tab" aria-selected="true">Plan</button>
+  <button class="tab" data-tab="liste" role="tab" aria-selected="false">Liste</button>
+</nav>
+
+<main class="wrap">
+
+  <section id="panelPlan" class="panel">
+    <div class="canvas-shell">
+      <div class="canvas-scroll" id="canvasScroll">
+        <div class="ruler-corner"></div>
+        <div id="rulerTop" class="ruler-top"></div>
+        <div id="rulerLeft" class="ruler-left"></div>
+        <div id="gardenCanvas" class="garden-canvas"></div>
+      </div>
+    </div>
+    <p class="hint">Glisse une zone pour la déplacer, tire le rond pour la redimensionner, ou touche-la pour saisir les dimensions exactes.</p>
+
+    <details class="legend">
+      <summary>Légende des cultures</summary>
+      <div id="legendGrid" class="legend-grid"></div>
+    </details>
+  </section>
+
+  <section id="panelListe" class="panel" hidden>
+    <div id="zoneList" class="zone-list"></div>
+    <div id="listEmpty" class="empty-state" hidden>
+      <p>Aucune zone pour l'instant.</p>
+      <p class="empty-sub">Touche le bouton + pour créer ta première zone de plantation.</p>
+    </div>
+  </section>
+
+</main>
+
+<button id="addZoneBtn" class="fab" aria-label="Ajouter une zone">+</button>
+
+<!-- MODALE ZONE -->
+<div id="zoneModalOverlay" class="modal-overlay" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="zoneModalTitle">Nouvelle zone</h2>
+      <button id="zoneModalClose" class="icon-btn" aria-label="Fermer">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="field-group">
+        <span class="field-label">Plante</span>
+        <div id="plantGrid" class="plant-grid"></div>
+        <div id="customPlantRow" class="custom-plant-row" hidden>
+          <input id="customPlantName" type="text" placeholder="Nom de la culture">
+          <input id="customPlantEmoji" type="text" placeholder="🌿" maxlength="2" style="width:52px; text-align:center;">
+          <input id="customPlantColor" type="color" value="#6B8E4E">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <span class="field-label">Variété (optionnel)</span>
+        <input id="zoneVariety" type="text" placeholder="Ex : Noire de Crimée, Charlotte…">
+      </div>
+
+      <div class="field-group">
+        <span class="field-label">Position et taille (m)</span>
+        <div class="dims-grid">
+          <label>Position X <input id="zoneX" type="number" min="0" step="0.1"></label>
+          <label>Position Y <input id="zoneY" type="number" min="0" step="0.1"></label>
+          <label>Largeur <input id="zoneW" type="number" min="0.1" step="0.1"></label>
+          <label>Longueur <input id="zoneH" type="number" min="0.1" step="0.1"></label>
+        </div>
+        <p id="zoneAreaPreview" class="area-preview">0 m²</p>
+      </div>
+
+      <div class="field-group">
+        <span class="field-label">Date de plantation</span>
+        <input id="zoneDate" type="date">
+      </div>
+
+      <div class="field-group">
+        <span class="field-label">Notes</span>
+        <textarea id="zoneNotes" rows="3" placeholder="Arrosage, associations, semis…"></textarea>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button id="zoneDeleteBtn" class="btn btn-danger" hidden>Supprimer</button>
+      <button id="zoneSaveBtn" class="btn btn-primary">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODALE RÉGLAGES -->
+<div id="settingsModalOverlay" class="modal-overlay" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Réglages</h2>
+      <button id="settingsModalClose" class="icon-btn" aria-label="Fermer">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="field-group">
+        <span class="field-label">Dimensions du potager (m)</span>
+        <div class="dims-grid">
+          <label>Largeur <input id="gardenW" type="number" min="1" step="0.5"></label>
+          <label>Longueur <input id="gardenH" type="number" min="1" step="0.5"></label>
+        </div>
+      </div>
+      <div class="settings-actions">
+        <button id="applyGardenSize" class="btn btn-secondary">Appliquer les dimensions</button>
+      </div>
+
+      <hr class="divider">
+
+      <div class="settings-actions">
+        <button id="exportBtn" class="btn btn-secondary">Exporter (JSON)</button>
+        <button id="importBtn" class="btn btn-secondary">Importer</button>
+        <input id="importFile" type="file" accept="application/json" hidden>
+      </div>
+
+      <hr class="divider">
+
+      <div class="settings-actions">
+        <button id="resetBtn" class="btn btn-danger">Réinitialiser le potager</button>
+      </div>
+
+      <p id="versionTag" class="version-tag">Mon Potager</p>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
