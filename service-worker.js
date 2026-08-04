@@ -1,4 +1,4 @@
-const CACHE_NAME = "potager-v2";
+const CACHE_NAME = "potager-v4";
 const ASSETS = [
   "./",
   "./index.html",
@@ -29,6 +29,12 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) {
+    // Requêtes externes (météo, géocodage) : toujours réseau, jamais mises en cache,
+    // pour ne pas servir de prévisions périmées.
+    return;
+  }
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const fetchPromise = fetch(event.request)

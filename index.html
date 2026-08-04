@@ -46,6 +46,27 @@
 <main class="wrap">
 
   <section id="panelPlan" class="panel">
+
+    <div id="weatherCard" class="weather-card">
+      <div id="weatherPrompt" class="weather-prompt">
+        <span class="weather-prompt-text">Active la météo pour savoir s'il faut arroser ou protéger tes cultures.</span>
+        <button id="weatherEnableBtn" class="btn btn-secondary">📍 Utiliser ma position</button>
+      </div>
+      <div id="weatherContent" class="weather-content" hidden>
+        <div class="weather-top">
+          <span id="weatherIcon" class="weather-icon">🌡️</span>
+          <div class="weather-temps">
+            <span id="weatherTemp" class="weather-temp">–°C</span>
+            <span id="weatherMinMax" class="weather-minmax">min – · max –</span>
+          </div>
+          <button id="weatherRefreshBtn" class="icon-btn small weather-refresh" aria-label="Actualiser la météo">🔄</button>
+        </div>
+        <div id="weatherMessages" class="weather-messages"></div>
+        <p id="weatherLocationLabel" class="weather-location"></p>
+      </div>
+      <p id="weatherError" class="weather-error" hidden></p>
+    </div>
+
     <div class="canvas-shell">
       <div class="canvas-scroll" id="canvasScroll">
         <div class="ruler-corner"></div>
@@ -144,6 +165,8 @@
 
       <div id="infoZoneCard" class="info-zone-card"></div>
 
+      <div id="infoWeatherNote" class="info-weather-note" hidden></div>
+
       <div id="infoFiche">
         <div class="info-grid">
           <div class="info-item">
@@ -198,6 +221,21 @@
       <button id="settingsModalClose" class="icon-btn" aria-label="Fermer">✕</button>
     </div>
     <div class="modal-body">
+
+      <div class="field-group">
+        <span class="field-label">Localisation (météo)</span>
+        <p id="locationLabelSettings" class="location-current">Aucune position définie</p>
+        <div class="settings-actions">
+          <button id="useMyLocationBtn" class="btn btn-secondary">📍 Utiliser ma position</button>
+        </div>
+        <div class="city-search-row">
+          <input id="citySearchInput" type="text" placeholder="Ou cherche une ville…">
+          <button id="citySearchBtn" class="btn btn-secondary">Chercher</button>
+        </div>
+        <div id="citySearchResults" class="city-results"></div>
+      </div>
+
+      <hr class="divider">
 
       <div class="field-group">
         <span class="field-label">Dimensions du potager (m)</span>

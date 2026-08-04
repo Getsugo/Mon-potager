@@ -413,6 +413,80 @@ input[type="color"] { width: 44px; height: 40px; padding: 2px; border: 1px solid
 }
 
 .divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
+/* ===== Carte météo ===== */
+.weather-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.weather-prompt { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.weather-prompt-text { font-size: 0.85rem; color: var(--ink-muted); }
+.weather-top { display: flex; align-items: center; gap: 10px; }
+.weather-icon { font-size: 2rem; line-height: 1; }
+.weather-temps { flex: 1; display: flex; flex-direction: column; }
+.weather-temp { font-size: 1.4rem; font-weight: 700; color: var(--ink); line-height: 1.1; }
+.weather-minmax { font-size: 0.75rem; color: var(--ink-muted); margin-top: 2px; }
+.weather-refresh { font-size: 1rem; }
+.weather-refresh.spinning { animation: spin 0.8s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.weather-messages { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.weather-msg {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.8rem; color: var(--ink);
+  background: var(--bg-card-2);
+  border-radius: 8px;
+  padding: 7px 10px;
+  line-height: 1.35;
+}
+.weather-msg-stale { color: var(--ink-muted); font-style: italic; }
+.weather-location { margin: 8px 0 0; font-size: 0.7rem; color: var(--ink-muted); text-align: right; }
+.weather-error { font-size: 0.82rem; color: var(--ink-muted); margin: 0; }
+
+/* ===== Badge météo sur zone ===== */
+.zone-badge {
+  position: absolute;
+  left: 2px; top: 2px;
+  font-size: 0.9rem;
+  background: var(--bg-card);
+  border-radius: 50%;
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow);
+}
+
+/* ===== Note météo dans la fiche culture ===== */
+.info-weather-note {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: color-mix(in srgb, var(--sun) 16%, var(--bg-card));
+  border: 1px solid var(--sun);
+  border-radius: 10px;
+  padding: 9px 11px;
+  font-size: 0.82rem;
+  color: var(--ink);
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+
+/* ===== Localisation (réglages) ===== */
+.location-current { font-size: 0.82rem; color: var(--ink-muted); margin: 0 0 8px; }
+.city-search-row { display: flex; gap: 8px; margin-top: 10px; }
+.city-search-row input { flex: 1; }
+.city-results { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.city-result {
+  text-align: left;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.82rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+.city-result:active { background: var(--border); }
 .settings-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .version-tag { text-align: center; font-size: 0.72rem; color: var(--ink-muted); margin-top: 24px; }
 

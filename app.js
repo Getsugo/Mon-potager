@@ -30,6 +30,8 @@
 
   const PLANT_INFO = {
     tomate: {
+      gelif: true,
+      eau: "eleve",
       soleil: "Plein soleil",
       arrosage: "Régulier au pied, sans mouiller le feuillage",
       chaleur: "Aime la chaleur, gélive : serre/tunnel utile en climat frais",
@@ -40,6 +42,8 @@
       conseil: "Tuteure les pieds et paille le sol pour limiter les maladies et garder l'humidité.",
     },
     courgette: {
+      gelif: true,
+      eau: "eleve",
       soleil: "Plein soleil",
       arrosage: "Abondant et régulier, au pied",
       chaleur: "Aime la chaleur, semis après les dernières gelées",
@@ -50,6 +54,8 @@
       conseil: "Récolte les fruits jeunes et régulièrement : cela relance la production.",
     },
     patate: {
+      gelif: true,
+      eau: "modere",
       soleil: "Plein soleil",
       arrosage: "Modéré, plus soutenu à la formation des tubercules",
       chaleur: "Craint le gel, pas besoin de serre",
@@ -60,6 +66,8 @@
       conseil: "Butte les plants 2 à 3 fois pour protéger les tubercules de la lumière et du gel.",
     },
     carotte: {
+      gelif: false,
+      eau: "modere",
       soleil: "Soleil à mi-ombre",
       arrosage: "Régulier et léger, sol frais en surface",
       chaleur: "Tolère bien la fraîcheur, pas de serre nécessaire",
@@ -70,6 +78,8 @@
       conseil: "Éclaircis tôt et bine régulièrement pour éviter que les racines fourchent.",
     },
     salade: {
+      gelif: false,
+      eau: "modere",
       soleil: "Mi-ombre en été, soleil au printemps/automne",
       arrosage: "Régulier et léger, sol toujours frais",
       chaleur: "Craint les fortes chaleurs (monte en graine), pas de serre l'été",
@@ -80,6 +90,8 @@
       conseil: "Sème peu à la fois mais souvent pour échelonner les récoltes.",
     },
     oignon: {
+      gelif: false,
+      eau: "modere",
       soleil: "Plein soleil",
       arrosage: "Modéré, à réduire puis arrêter avant la récolte",
       chaleur: "Résiste bien au frais, pas de serre nécessaire",
@@ -90,6 +102,8 @@
       conseil: "Laisse sécher les bulbes au sol quelques jours avant de les stocker.",
     },
     fraise: {
+      gelif: true,
+      eau: "eleve",
       soleil: "Plein soleil à mi-ombre légère",
       arrosage: "Régulier au pied, sans mouiller les fruits",
       chaleur: "Pas de serre nécessaire, protéger en hiver si froid vif",
@@ -100,6 +114,8 @@
       conseil: "Paille sous les fruits pour éviter le contact avec la terre et limiter la pourriture.",
     },
     haricot: {
+      gelif: true,
+      eau: "modere",
       soleil: "Plein soleil",
       arrosage: "Modéré, plus soutenu à la floraison",
       chaleur: "Craint le gel, aime la chaleur",
@@ -110,6 +126,8 @@
       conseil: "Tuteure les variétés grimpantes dès la levée pour guider leur croissance.",
     },
     poivron: {
+      gelif: true,
+      eau: "eleve",
       soleil: "Plein soleil, forte chaleur",
       arrosage: "Régulier, soutenu en été",
       chaleur: "Frileux : serre/tunnel conseillé en climat tempéré",
@@ -120,6 +138,8 @@
       conseil: "Pince le bourgeon terminal pour favoriser la ramification et plus de fruits.",
     },
     radis: {
+      gelif: false,
+      eau: "eleve",
       soleil: "Soleil à mi-ombre",
       arrosage: "Fréquent et régulier (sinon racines piquantes)",
       chaleur: "Culture fraîche, monte en graine si trop chaud",
@@ -130,6 +150,8 @@
       conseil: "Récolte-les jeunes : des radis oubliés trop longtemps deviennent creux et piquants.",
     },
     courge: {
+      gelif: true,
+      eau: "eleve",
       soleil: "Plein soleil",
       arrosage: "Abondant et régulier, au pied",
       chaleur: "Aime la chaleur, gélive",
@@ -140,6 +162,8 @@
       conseil: "Laisse un bout de pédoncule sur le fruit à la récolte : cela améliore sa conservation.",
     },
     aubergine: {
+      gelif: true,
+      eau: "eleve",
       soleil: "Plein soleil, forte chaleur",
       arrosage: "Régulier et soutenu en été",
       chaleur: "Très frileuse : serre/tunnel vivement conseillé",
@@ -150,6 +174,8 @@
       conseil: "Limite à 4-6 fruits par pied pour obtenir de belles aubergines bien formées.",
     },
     ail: {
+      gelif: false,
+      eau: "faible",
       soleil: "Plein soleil",
       arrosage: "Faible, arrêter avant la récolte",
       chaleur: "Résiste bien au froid, pas de serre",
@@ -160,6 +186,8 @@
       conseil: "Laisse sécher les têtes au soleil quelques jours avant de les stocker.",
     },
     petitpois: {
+      gelif: false,
+      eau: "modere",
       soleil: "Plein soleil à mi-ombre",
       arrosage: "Modéré, surtout à la floraison et formation des gousses",
       chaleur: "Culture fraîche, craint les fortes chaleurs d'été",
@@ -170,6 +198,8 @@
       conseil: "Installe un grillage ou des tuteurs dès la levée et récolte souvent pour prolonger la production.",
     },
     herbes: {
+      gelif: true,
+      eau: "modere",
       soleil: "Plein soleil à mi-ombre selon l'espèce",
       arrosage: "Sobre pour les méditerranéennes (thym, romarin), plus régulier pour basilic/menthe/persil",
       chaleur: "Variable : le basilic est frileux, thym et romarin sont rustiques",
@@ -183,6 +213,137 @@
 
   function getPlantInfo(zone) {
     return PLANT_INFO[zone.plantId] || null;
+  }
+
+  /* ===================== Météo ===================== */
+  const LOCATION_KEY = "potager-location";
+  const WEATHER_CACHE_KEY = "potager-weather-cache";
+  const WEATHER_MAX_AGE_MS = 30 * 60 * 1000; // 30 min
+
+  const WEATHER_EMOJI = {
+    0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
+    45: "🌫️", 48: "🌫️",
+    51: "🌦️", 53: "🌦️", 55: "🌦️",
+    56: "🌧️", 57: "🌧️",
+    61: "🌧️", 63: "🌧️", 65: "🌧️",
+    66: "🌧️", 67: "🌧️",
+    71: "🌨️", 73: "🌨️", 75: "🌨️", 77: "🌨️",
+    80: "🌦️", 81: "🌧️", 82: "⛈️",
+    85: "🌨️", 86: "🌨️",
+    95: "⛈️", 96: "⛈️", 99: "⛈️",
+  };
+
+  function weatherEmoji(code) {
+    return WEATHER_EMOJI[code] || "🌡️";
+  }
+
+  function loadLocation() {
+    try {
+      const raw = localStorage.getItem(LOCATION_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function saveLocation(loc) {
+    try {
+      localStorage.setItem(LOCATION_KEY, JSON.stringify(loc));
+    } catch (e) { /* ignore */ }
+  }
+
+  function loadWeatherCache() {
+    try {
+      const raw = localStorage.getItem(WEATHER_CACHE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function saveWeatherCache(data) {
+    try {
+      localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify(data));
+    } catch (e) { /* ignore */ }
+  }
+
+  let currentWeather = loadWeatherCache(); // { fetchedAt, lat, lon, temp, code, min, max, precipSum, precipProb }
+  let currentAdvice = computeWeatherAdvice(currentWeather);
+
+  function computeWeatherAdvice(w) {
+    if (!w) return { frostRisk: false, rainLikely: false, heatWave: false, messages: [] };
+    const frostRisk = typeof w.min === "number" && w.min <= 2;
+    const rainLikely = (typeof w.precipSum === "number" && w.precipSum >= 3) ||
+                        (typeof w.precipProb === "number" && w.precipProb >= 60);
+    const heatWave = typeof w.max === "number" && w.max >= 30;
+
+    const messages = [];
+    if (frostRisk) {
+      messages.push({ icon: "❄️", text: "Risque de gel (min " + Math.round(w.min) + "°C) : protège les cultures sensibles (voile, cloche, rentre les pots)." });
+    }
+    if (rainLikely) {
+      messages.push({ icon: "🌧️", text: "Pluie prévue aujourd'hui : inutile d'arroser, la nature s'en charge." });
+    } else if (heatWave) {
+      messages.push({ icon: "☀️", text: "Forte chaleur (" + Math.round(w.max) + "°C) : arrose tôt le matin ou en soirée, paille pour garder l'humidité." });
+    } else {
+      messages.push({ icon: "💧", text: "Pas de pluie prévue : vérifie l'humidité du sol avant d'arroser." });
+    }
+    return { frostRisk, rainLikely, heatWave, messages };
+  }
+
+  function zoneWeatherNote(zone) {
+    const info = getPlantInfo(zone);
+    if (!info || !currentWeather) return null;
+    if (info.gelif && currentAdvice.frostRisk) {
+      return { icon: "❄️", text: "Cette culture craint le gel et un risque de gel est prévu : pense à la protéger." };
+    }
+    if (info.eau === "eleve" && !currentAdvice.rainLikely) {
+      return { icon: "💧", text: "Cette culture a des besoins en eau élevés et aucune pluie n'est prévue : pense à l'arroser." };
+    }
+    return null;
+  }
+
+  function zoneWeatherBadge(zone) {
+    const info = getPlantInfo(zone);
+    if (!info || !currentWeather) return null;
+    if (info.gelif && currentAdvice.frostRisk) return "❄️";
+    if (info.eau === "eleve" && !currentAdvice.rainLikely) return "💧";
+    return null;
+  }
+
+  async function fetchWeatherForLocation(loc) {
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=" + loc.lat +
+      "&longitude=" + loc.lon +
+      "&current=temperature_2m,weather_code" +
+      "&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max" +
+      "&forecast_days=1&timezone=auto";
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("weather http " + res.status);
+    const json = await res.json();
+    const data = {
+      fetchedAt: Date.now(),
+      lat: loc.lat,
+      lon: loc.lon,
+      temp: json.current ? json.current.temperature_2m : null,
+      code: json.current ? json.current.weather_code : null,
+      max: json.daily ? json.daily.temperature_2m_max[0] : null,
+      min: json.daily ? json.daily.temperature_2m_min[0] : null,
+      precipSum: json.daily ? json.daily.precipitation_sum[0] : null,
+      precipProb: json.daily ? json.daily.precipitation_probability_max[0] : null,
+    };
+    currentWeather = data;
+    currentAdvice = computeWeatherAdvice(data);
+    saveWeatherCache(data);
+    return data;
+  }
+
+  async function searchCity(query) {
+    const url = "https://geocoding-api.open-meteo.com/v1/search?name=" +
+      encodeURIComponent(query) + "&count=5&language=fr&format=json";
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("geocoding http " + res.status);
+    const json = await res.json();
+    return json.results || [];
   }
 
   /* ===================== État ===================== */
@@ -264,6 +425,26 @@
   const zoneList = el("zoneList");
   const listEmpty = el("listEmpty");
   const addZoneBtn = el("addZoneBtn");
+
+  const weatherCard = el("weatherCard");
+  const weatherPrompt = el("weatherPrompt");
+  const weatherEnableBtn = el("weatherEnableBtn");
+  const weatherContent = el("weatherContent");
+  const weatherIcon = el("weatherIcon");
+  const weatherTemp = el("weatherTemp");
+  const weatherMinMax = el("weatherMinMax");
+  const weatherLocationLabel = el("weatherLocationLabel");
+  const weatherRefreshBtn = el("weatherRefreshBtn");
+  const weatherMessages = el("weatherMessages");
+  const weatherError = el("weatherError");
+
+  const infoWeatherNote = el("infoWeatherNote");
+
+  const locationLabelSettings = el("locationLabelSettings");
+  const useMyLocationBtn = el("useMyLocationBtn");
+  const citySearchInput = el("citySearchInput");
+  const citySearchBtn = el("citySearchBtn");
+  const citySearchResults = el("citySearchResults");
 
   const infoModalOverlay = el("infoModalOverlay");
   const infoModalClose = el("infoModalClose");
@@ -400,7 +581,9 @@
     node.style.top = (zone.y * PX_PER_M) + "px";
     node.style.width = (zone.w * PX_PER_M) + "px";
     node.style.height = (zone.h * PX_PER_M) + "px";
+    const badge = zoneWeatherBadge(zone);
     node.innerHTML = `
+      ${badge ? `<span class="zone-badge" title="Alerte météo">${badge}</span>` : ""}
       <span class="zone-emoji">${plant.emoji}</span>
       <span class="zone-name">${escapeHtml(plant.name)}</span>
       <span class="zone-dims">${fmtM(zone.w)}×${fmtM(zone.h)} m</span>
@@ -612,6 +795,7 @@
     }
 
     infoModalOverlay.hidden = false;
+    updateInfoWeatherNote();
   }
 
   function closeInfoModal() {
@@ -736,6 +920,162 @@
 
   addZoneBtn.addEventListener("click", () => openZoneModal(null));
 
+  /* ===================== Rendu météo ===================== */
+  function locationLabel(loc) {
+    if (!loc) return "";
+    if (loc.label) return loc.label;
+    return loc.lat.toFixed(2) + ", " + loc.lon.toFixed(2);
+  }
+
+  function renderWeatherCard() {
+    const loc = loadLocation();
+
+    if (locationLabelSettings) {
+      locationLabelSettings.textContent = loc ? locationLabel(loc) : "Aucune position définie";
+    }
+
+    if (!loc) {
+      weatherPrompt.hidden = false;
+      weatherContent.hidden = true;
+      weatherError.hidden = true;
+      return;
+    }
+
+    weatherPrompt.hidden = true;
+
+    if (!currentWeather) {
+      weatherContent.hidden = true;
+      weatherError.hidden = false;
+      weatherError.textContent = "Météo indisponible pour le moment.";
+      return;
+    }
+
+    weatherError.hidden = true;
+    weatherContent.hidden = false;
+    weatherIcon.textContent = weatherEmoji(currentWeather.code);
+    weatherTemp.textContent = (currentWeather.temp !== null ? Math.round(currentWeather.temp) : "–") + "°C";
+    weatherMinMax.textContent = "min " + Math.round(currentWeather.min) + "° · max " + Math.round(currentWeather.max) + "°";
+    weatherLocationLabel.textContent = locationLabel(loc);
+
+    weatherMessages.innerHTML = "";
+    currentAdvice.messages.forEach(m => {
+      const div = document.createElement("div");
+      div.className = "weather-msg";
+      div.innerHTML = `<span>${m.icon}</span><span>${escapeHtml(m.text)}</span>`;
+      weatherMessages.appendChild(div);
+    });
+
+    const age = Date.now() - currentWeather.fetchedAt;
+    if (age > WEATHER_MAX_AGE_MS * 4) {
+      const stale = document.createElement("div");
+      stale.className = "weather-msg weather-msg-stale";
+      stale.innerHTML = `<span>⏱️</span><span>Dernière mise à jour il y a longtemps, actualise si tu es en ligne.</span>`;
+      weatherMessages.appendChild(stale);
+    }
+  }
+
+  async function refreshWeather(force) {
+    const loc = loadLocation();
+    if (!loc) { renderWeatherCard(); return; }
+    if (!force && currentWeather && (Date.now() - currentWeather.fetchedAt) < WEATHER_MAX_AGE_MS &&
+        currentWeather.lat === loc.lat && currentWeather.lon === loc.lon) {
+      renderWeatherCard();
+      renderZones();
+      return;
+    }
+    weatherRefreshBtn.classList.add("spinning");
+    try {
+      await fetchWeatherForLocation(loc);
+      renderWeatherCard();
+      renderZones();
+      if (!infoModalOverlay.hidden) updateInfoWeatherNote();
+    } catch (e) {
+      if (!currentWeather) {
+        weatherContent.hidden = true;
+        weatherError.hidden = false;
+        weatherError.textContent = "Impossible de récupérer la météo (hors-ligne ?).";
+      } else {
+        renderWeatherCard();
+        showToast("Météo non actualisée (hors-ligne ?)");
+      }
+    } finally {
+      weatherRefreshBtn.classList.remove("spinning");
+    }
+  }
+
+  function useMyLocation() {
+    if (!("geolocation" in navigator)) {
+      showToast("Localisation non disponible sur cet appareil");
+      return;
+    }
+    weatherEnableBtn.disabled = true;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        weatherEnableBtn.disabled = false;
+        const loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, label: "Ma position", source: "geo" };
+        saveLocation(loc);
+        renderWeatherCard();
+        refreshWeather(true);
+        if (citySearchResults) citySearchResults.innerHTML = "";
+      },
+      (err) => {
+        weatherEnableBtn.disabled = false;
+        showToast("Position refusée ou indisponible");
+      },
+      { enableHighAccuracy: false, timeout: 10000 }
+    );
+  }
+
+  weatherEnableBtn.addEventListener("click", useMyLocation);
+  useMyLocationBtn.addEventListener("click", useMyLocation);
+  weatherRefreshBtn.addEventListener("click", () => refreshWeather(true));
+
+  citySearchBtn.addEventListener("click", async () => {
+    const q = citySearchInput.value.trim();
+    if (!q) return;
+    citySearchResults.innerHTML = `<p class="empty-sub">Recherche…</p>`;
+    try {
+      const results = await searchCity(q);
+      if (results.length === 0) {
+        citySearchResults.innerHTML = `<p class="empty-sub">Aucun résultat.</p>`;
+        return;
+      }
+      citySearchResults.innerHTML = "";
+      results.forEach(r => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "city-result";
+        const region = r.admin1 ? r.admin1 + ", " : "";
+        item.textContent = r.name + " (" + region + r.country + ")";
+        item.addEventListener("click", () => {
+          const loc = { lat: r.latitude, lon: r.longitude, label: r.name, source: "manual" };
+          saveLocation(loc);
+          citySearchResults.innerHTML = "";
+          citySearchInput.value = "";
+          renderWeatherCard();
+          refreshWeather(true);
+          showToast("Position mise à jour : " + r.name);
+        });
+        citySearchResults.appendChild(item);
+      });
+    } catch (e) {
+      citySearchResults.innerHTML = `<p class="empty-sub">Recherche impossible (hors-ligne ?).</p>`;
+    }
+  });
+
+  function updateInfoWeatherNote() {
+    if (!infoZoneId) return;
+    const zone = state.zones.find(z => z.id === infoZoneId);
+    if (!zone) return;
+    const note = zoneWeatherNote(zone);
+    if (note) {
+      infoWeatherNote.hidden = false;
+      infoWeatherNote.innerHTML = `<span>${note.icon}</span><span>${escapeHtml(note.text)}</span>`;
+    } else {
+      infoWeatherNote.hidden = true;
+    }
+  }
+
   /* ===================== Réglages ===================== */
   settingsBtn.addEventListener("click", () => {
     gardenWInput.value = state.gardenW;
@@ -819,12 +1159,14 @@
   /* ===================== Init ===================== */
   function init() {
     initTheme();
-    if (versionTag) versionTag.textContent = "Mon Potager · v1";
+    if (versionTag) versionTag.textContent = "Mon Potager · v2";
     renderCanvasSize();
     renderZones();
     renderLegend();
     updateStats();
     renderList();
+    renderWeatherCard();
+    refreshWeather(false);
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
