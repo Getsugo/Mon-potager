@@ -517,7 +517,8 @@
     toastEl.textContent = msg;
     toastEl.hidden = false;
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { toastEl.hidden = true; }, 2200);
+    const duration = Math.max(2200, Math.min(6000, msg.length * 55));
+    toastTimer = setTimeout(() => { toastEl.hidden = true; }, duration);
   }
 
   /* ===================== Onglets ===================== */
@@ -1003,31 +1004,53 @@
     }
   }
 
-  function useMyLocation() {
+  function useMyLocation(triggerBtn) {
     if (!("geolocation" in navigator)) {
       showToast("Localisation non disponible sur cet appareil");
       return;
     }
-    weatherEnableBtn.disabled = true;
+    if (window.isSecureContext === false) {
+      showToast("La géolocalisation nécessite une connexion HTTPS. Utilise la recherche par ville.");
+      return;
+    }
+    const btns = [weatherEnableBtn, useMyLocationBtn].filter(Boolean);
+    btns.forEach(b => { b.disabled = true; });
+    const originalLabel = triggerBtn ? triggerBtn.textContent : null;
+    if (triggerBtn) triggerBtn.textContent = "📍 Recherche en cours…";
+
+    function done() {
+      btns.forEach(b => { b.disabled = false; });
+      if (triggerBtn && originalLabel) triggerBtn.textContent = originalLabel;
+    }
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        weatherEnableBtn.disabled = false;
+        done();
         const loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, label: "Ma position", source: "geo" };
         saveLocation(loc);
         renderWeatherCard();
         refreshWeather(true);
         if (citySearchResults) citySearchResults.innerHTML = "";
+        showToast("Position détectée");
       },
       (err) => {
-        weatherEnableBtn.disabled = false;
-        showToast("Position refusée ou indisponible");
+        done();
+        let msg = "Position indisponible. Essaie la recherche par ville.";
+        if (err && err.code === 1) {
+          msg = "Localisation refusée : vérifie l'autorisation de position pour ce site (dans les réglages du navigateur), ou utilise la recherche par ville.";
+        } else if (err && err.code === 2) {
+          msg = "Position indisponible (GPS/réseau). Essaie la recherche par ville.";
+        } else if (err && err.code === 3) {
+          msg = "La détection a pris trop de temps. Réessaie, ou utilise la recherche par ville.";
+        }
+        showToast(msg);
       },
-      { enableHighAccuracy: false, timeout: 10000 }
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 300000 }
     );
   }
 
-  weatherEnableBtn.addEventListener("click", useMyLocation);
-  useMyLocationBtn.addEventListener("click", useMyLocation);
+  weatherEnableBtn.addEventListener("click", () => useMyLocation(weatherEnableBtn));
+  useMyLocationBtn.addEventListener("click", () => useMyLocation(useMyLocationBtn));
   weatherRefreshBtn.addEventListener("click", () => refreshWeather(true));
 
   citySearchBtn.addEventListener("click", async () => {

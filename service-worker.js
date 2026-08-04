@@ -1,4 +1,4 @@
-const CACHE_NAME = "potager-v4";
+const CACHE_NAME = "potager-v5";
 const ASSETS = [
   "./",
   "./index.html",
