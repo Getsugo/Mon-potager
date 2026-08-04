@@ -1244,7 +1244,23 @@
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("service-worker.js").catch(() => {});
+        navigator.serviceWorker.register("service-worker.js").then((reg) => {
+          // Vérifie activement une nouvelle version à chaque ouverture/retour sur l'app
+          reg.update();
+          document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") reg.update();
+          });
+        }).catch(() => {});
+      });
+
+      // Dès qu'une nouvelle version prend le contrôle, on recharge une fois
+      // pour être sûr d'utiliser le HTML/JS/CSS à jour (corrige les bugs déjà résolus
+      // qui semblent "ne pas fonctionner" à cause d'une ancienne version en cache).
+      let swRefreshed = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (swRefreshed) return;
+        swRefreshed = true;
+        window.location.reload();
       });
     }
   }

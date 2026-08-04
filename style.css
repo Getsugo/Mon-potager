@@ -70,7 +70,14 @@ button, input, textarea { font-family: inherit; }
   color: var(--soil);
 }
 [data-theme="dark"] .topbar-title h1 { color: var(--ink); }
-.logo-mark { font-size: 1.35rem; }
+.logo-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+}
 .topbar-actions { display: flex; gap: 6px; }
 .icon-btn {
   border: none; background: transparent; font-size: 1.15rem;
