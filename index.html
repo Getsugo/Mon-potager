@@ -140,6 +140,11 @@
         <textarea id="zoneNotes" rows="3" placeholder="Arrosage, associations, semis…"></textarea>
       </div>
 
+      <label class="field-checkbox">
+        <input id="zoneLocked" type="checkbox">
+        <span>🔒 Verrouiller cette planche (empêche de la déplacer ou de la redimensionner par accident)</span>
+      </label>
+
     </div>
     <div class="modal-footer">
       <button id="zoneDeleteBtn" class="btn btn-danger" hidden>Supprimer</button>
@@ -208,6 +213,7 @@
 
     </div>
     <div class="modal-footer">
+      <button id="infoLockBtn" class="btn btn-secondary">🔒 Verrouiller</button>
       <button id="infoEditBtn" class="btn btn-primary">Modifier la planche</button>
     </div>
   </div>

@@ -479,6 +479,7 @@
   const infoConseil = el("infoConseil");
   const infoNotesBlock = el("infoNotesBlock");
   const infoEditBtn = el("infoEditBtn");
+  const infoLockBtn = el("infoLockBtn");
   let infoZoneId = null;
 
   const zoneModalOverlay = el("zoneModalOverlay");
@@ -497,6 +498,7 @@
   const zoneAreaPreview = el("zoneAreaPreview");
   const zoneDate = el("zoneDate");
   const zoneNotes = el("zoneNotes");
+  const zoneLocked = el("zoneLocked");
   const zoneDeleteBtn = el("zoneDeleteBtn");
   const zoneSaveBtn = el("zoneSaveBtn");
 
@@ -591,7 +593,7 @@
   function buildZoneEl(zone) {
     const plant = getPlant(zone);
     const node = document.createElement("div");
-    node.className = "zone";
+    node.className = "zone" + (zone.locked ? " zone-locked" : "");
     node.dataset.id = zone.id;
     node.style.setProperty("--zone-color", plant.color);
     node.style.left = (zone.x * PX_PER_M) + "px";
@@ -601,6 +603,7 @@
     const badge = zoneWeatherBadge(zone);
     node.innerHTML = `
       ${badge ? `<span class="zone-badge" title="Alerte météo">${badge}</span>` : ""}
+      ${zone.locked ? `<span class="zone-lock-badge" title="Planche verrouillée">🔒</span>` : ""}
       <span class="zone-emoji">${plant.emoji}</span>
       <span class="zone-name">${escapeHtml(plant.name)}</span>
       <span class="zone-dims">${fmtM(zone.w)}×${fmtM(zone.h)} m</span>
@@ -621,6 +624,7 @@
     const handle = node.querySelector(".zone-handle");
 
     handle.addEventListener("pointerdown", (e) => {
+      if (zone.locked) return;
       e.stopPropagation();
       e.preventDefault();
       handle.setPointerCapture(e.pointerId);
@@ -659,6 +663,7 @@
       let moved = false;
 
       function onMove(ev) {
+        if (zone.locked) return;
         const dxPx = ev.clientX - startX;
         const dyPx = ev.clientY - startY;
         if (!moved && Math.hypot(dxPx, dyPx) > MOVE_THRESHOLD) {
@@ -729,7 +734,7 @@
       card.innerHTML = `
         <span class="zone-card-emoji">${plant.emoji}</span>
         <div class="zone-card-info">
-          <div class="zone-card-title">${escapeHtml(plant.name)}</div>
+          <div class="zone-card-title">${zone.locked ? "🔒 " : ""}${escapeHtml(plant.name)}</div>
           <div class="zone-card-sub">${sub}</div>
         </div>
         <span class="zone-card-chev">›</span>
@@ -813,6 +818,11 @@
 
     infoModalOverlay.hidden = false;
     updateInfoWeatherNote();
+    updateInfoLockBtn(zone);
+  }
+
+  function updateInfoLockBtn(zone) {
+    infoLockBtn.textContent = zone.locked ? "🔓 Déverrouiller" : "🔒 Verrouiller";
   }
 
   function closeInfoModal() {
@@ -822,6 +832,16 @@
 
   infoModalClose.addEventListener("click", closeInfoModal);
   infoModalOverlay.addEventListener("click", (e) => { if (e.target === infoModalOverlay) closeInfoModal(); });
+  infoLockBtn.addEventListener("click", () => {
+    const zone = state.zones.find(z => z.id === infoZoneId);
+    if (!zone) return;
+    zone.locked = !zone.locked;
+    saveState();
+    renderZones();
+    renderList();
+    updateInfoLockBtn(zone);
+    showToast(zone.locked ? "Planche verrouillée" : "Planche déverrouillée");
+  });
   infoEditBtn.addEventListener("click", () => {
     const zoneId = infoZoneId;
     closeInfoModal();
@@ -839,7 +859,7 @@
       selectedPlantId = zone.plantId;
     } else {
       const freeSpot = findFreeSpot();
-      zone = { x: freeSpot.x, y: freeSpot.y, w: 1, h: 1, plantId: selectedPlantId || PLANTS[0].id, variety: "", date: "", notes: "" };
+      zone = { x: freeSpot.x, y: freeSpot.y, w: 1, h: 1, plantId: selectedPlantId || PLANTS[0].id, variety: "", date: "", notes: "", locked: false };
       zoneModalTitle.textContent = "Nouvelle zone";
       zoneDeleteBtn.hidden = true;
       selectedPlantId = PLANTS[0].id;
@@ -856,6 +876,7 @@
     zoneH.value = zone.h;
     zoneDate.value = zone.date || "";
     zoneNotes.value = zone.notes || "";
+    zoneLocked.checked = !!zone.locked;
     updateAreaPreview();
 
     zoneModalOverlay.hidden = false;
@@ -900,6 +921,7 @@
       x, y, w, h,
       date: zoneDate.value,
       notes: zoneNotes.value.trim(),
+      locked: zoneLocked.checked,
     };
 
     if (selectedPlantId === "autre" && !data.customName) {

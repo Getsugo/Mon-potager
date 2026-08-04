@@ -210,6 +210,37 @@ main.wrap { padding: 0 18px; }
   cursor: nwse-resize;
 }
 
+/* ===== Zones verrouillées ===== */
+.zone.zone-locked { cursor: default; border-style: solid; }
+.zone.zone-locked:active { cursor: default; }
+.zone-locked .zone-handle { display: none; }
+.zone-lock-badge {
+  position: absolute;
+  right: 2px; top: 2px;
+  font-size: 0.75rem;
+  background: var(--bg-card);
+  border-radius: 50%;
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow);
+}
+
+/* ===== Case à cocher (verrouillage etc.) ===== */
+.field-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: var(--ink);
+  line-height: 1.4;
+  padding: 10px 12px;
+  background: var(--bg-card-2);
+  border-radius: 10px;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+.field-checkbox input { margin-top: 2px; width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--leaf); }
+
 .hint {
   font-size: 0.75rem;
   color: var(--ink-muted);
