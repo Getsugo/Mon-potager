@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Mon Potager</title>
 <meta name="theme-color" content="#4A3626">
-<link rel="manifest" href="manifest.json?v=10">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=10">
-<link rel="icon" href="icon-192.png?v=10">
-<link rel="stylesheet" href="style.css?v=10">
+<link rel="manifest" href="manifest.json?v=11">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=11">
+<link rel="icon" href="icon-192.png?v=11">
+<link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
 
 <header class="topbar">
   <div class="topbar-title">
-    <img class="logo-mark" src="icon-192.png?v=10" alt="" aria-hidden="true">
+    <img class="logo-mark" src="icon-192.png?v=11" alt="" aria-hidden="true">
     <h1>Mon Potager</h1>
   </div>
   <div class="topbar-actions">
@@ -65,6 +65,13 @@
         <p id="weatherLocationLabel" class="weather-location"></p>
       </div>
       <p id="weatherError" class="weather-error" hidden></p>
+    </div>
+
+    <div class="zoom-bar">
+      <button id="zoomOutBtn" class="icon-btn small" aria-label="Dézoomer">−</button>
+      <span id="zoomLabel" class="zoom-label">100%</span>
+      <button id="zoomInBtn" class="icon-btn small" aria-label="Zoomer">+</button>
+      <button id="zoomFitBtn" class="btn-text zoom-fit">Tout voir</button>
     </div>
 
     <div class="canvas-shell">
@@ -275,6 +282,6 @@
 
 <div id="toast" class="toast" hidden></div>
 
-<script src="app.js?v=10"></script>
+<script src="app.js?v=11"></script>
 </body>
 </html>

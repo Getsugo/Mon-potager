@@ -4,7 +4,11 @@
   /* ===================== Constantes ===================== */
   const STORAGE_KEY = "potager-state-v1";
   const THEME_KEY = "potager-theme";
-  const PX_PER_M = 56; // échelle du plan
+  const BASE_PX_PER_M = 56; // échelle de référence du plan (à 100%)
+  let PX_PER_M = BASE_PX_PER_M;
+  const MIN_ZOOM = 0.35;
+  const MAX_ZOOM = 1.6;
+  const ZOOM_KEY = "potager-zoom";
   const SNAP = 0.1; // pas de déplacement / redimensionnement (m)
   const MIN_SIZE = 0.2; // taille mini d'une zone (m)
   const MOVE_THRESHOLD = 5; // px avant de considérer que c'est un glissement
@@ -437,6 +441,10 @@
   const rulerTop = el("rulerTop");
   const rulerLeft = el("rulerLeft");
   const gardenCanvas = el("gardenCanvas");
+  const zoomInBtn = el("zoomInBtn");
+  const zoomOutBtn = el("zoomOutBtn");
+  const zoomFitBtn = el("zoomFitBtn");
+  const zoomLabel = el("zoomLabel");
   const legendGrid = el("legendGrid");
   const zoneList = el("zoneList");
   const listEmpty = el("listEmpty");
@@ -550,6 +558,45 @@
       panelListe.hidden = target !== "liste";
       if (target === "liste") renderList();
     });
+  });
+
+  /* ===================== Zoom du plan ===================== */
+  function loadZoom() {
+    const raw = parseFloat(localStorage.getItem(ZOOM_KEY));
+    if (isNaN(raw)) return 1;
+    return clamp(raw, MIN_ZOOM, MAX_ZOOM);
+  }
+  function saveZoom(z) {
+    try { localStorage.setItem(ZOOM_KEY, String(z)); } catch (e) {}
+  }
+  let zoomLevel = loadZoom();
+
+  function setZoom(newZoom) {
+    zoomLevel = clamp(Math.round(newZoom * 20) / 20, MIN_ZOOM, MAX_ZOOM); // pas de 5%
+    PX_PER_M = BASE_PX_PER_M * zoomLevel;
+    saveZoom(zoomLevel);
+    zoomLabel.textContent = Math.round(zoomLevel * 100) + "%";
+    zoomInBtn.disabled = zoomLevel >= MAX_ZOOM;
+    zoomOutBtn.disabled = zoomLevel <= MIN_ZOOM;
+    renderCanvasSize();
+    renderZones();
+  }
+
+  function fitZoomToGarden() {
+    const containerWidth = canvasScroll.clientWidth || 300;
+    const availW = Math.max(100, containerWidth - 26 - 12);
+    const availH = Math.max(100, window.innerHeight * 0.5 - 20);
+    const neededW = state.gardenW * BASE_PX_PER_M;
+    const neededH = state.gardenH * BASE_PX_PER_M;
+    const fit = Math.min(availW / neededW, availH / neededH, MAX_ZOOM);
+    setZoom(fit);
+  }
+
+  zoomInBtn.addEventListener("click", () => setZoom(zoomLevel + 0.1));
+  zoomOutBtn.addEventListener("click", () => setZoom(zoomLevel - 0.1));
+  zoomFitBtn.addEventListener("click", () => {
+    fitZoomToGarden();
+    showToast("Vue ajustée au potager");
   });
 
   /* ===================== Rendu du plan ===================== */
@@ -1233,6 +1280,10 @@
   function init() {
     initTheme();
     if (versionTag) versionTag.textContent = "Mon Potager · v2";
+    PX_PER_M = BASE_PX_PER_M * zoomLevel;
+    zoomLabel.textContent = Math.round(zoomLevel * 100) + "%";
+    zoomInBtn.disabled = zoomLevel >= MAX_ZOOM;
+    zoomOutBtn.disabled = zoomLevel <= MIN_ZOOM;
     renderCanvasSize();
     renderZones();
     renderLegend();
