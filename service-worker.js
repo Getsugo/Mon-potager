@@ -1,14 +1,14 @@
-const CACHE_NAME = "potager-v9";
+const CACHE_NAME = "potager-v10";
 const ASSETS = [
   "./",
   "./index.html",
-  "./style.css?v=9",
-  "./app.js?v=9",
-  "./manifest.json?v=9",
-  "./icon-192.png?v=9",
-  "./icon-512.png?v=9",
-  "./icon-maskable-512.png?v=9",
-  "./apple-touch-icon.png?v=9",
+  "./style.css?v=10",
+  "./app.js?v=10",
+  "./manifest.json?v=10",
+  "./icon-192.png?v=10",
+  "./icon-512.png?v=10",
+  "./icon-maskable-512.png?v=10",
+  "./apple-touch-icon.png?v=10",
 ];
 
 self.addEventListener("install", (event) => {

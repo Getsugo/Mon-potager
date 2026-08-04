@@ -183,7 +183,6 @@ main.wrap { padding: 0 18px; }
     linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
   background-color: var(--bg-page);
-  touch-action: none;
 }
 
 /* ===== Planting zone ===== */
@@ -201,6 +200,7 @@ main.wrap { padding: 0 18px; }
   cursor: grab;
   user-select: none;
   overflow: hidden;
+  touch-action: none;
 }
 .zone:active { cursor: grabbing; }
 .zone.dragging { box-shadow: var(--shadow-lift); z-index: 5; opacity: 0.92; }
@@ -215,6 +215,7 @@ main.wrap { padding: 0 18px; }
   background: var(--zone-color, var(--leaf));
   border: 2px solid var(--bg-card);
   cursor: nwse-resize;
+  touch-action: none;
 }
 
 /* ===== Zones verrouillées ===== */
