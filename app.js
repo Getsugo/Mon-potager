@@ -346,6 +346,22 @@
     return json.results || [];
   }
 
+  async function reverseGeocode(lat, lon) {
+    try {
+      const url = "https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=" +
+        lat + "&longitude=" + lon + "&localityLanguage=fr";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("reverse geocode http " + res.status);
+      const json = await res.json();
+      const place = json.city || json.locality || json.principalSubdivision || null;
+      const country = json.countryName || null;
+      if (place && country && json.countryCode !== "FR") return place + ", " + country;
+      return place;
+    } catch (e) {
+      return null;
+    }
+  }
+
   /* ===================== État ===================== */
   let state = loadState();
   let activeZoneId = null; // zone en cours d'édition dans la modale
@@ -1026,12 +1042,24 @@
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         done();
-        const loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, label: "Ma position", source: "geo" };
+        const lat = pos.coords.latitude, lon = pos.coords.longitude;
+        const loc = { lat, lon, label: "Ma position", source: "geo" };
         saveLocation(loc);
         renderWeatherCard();
         refreshWeather(true);
         if (citySearchResults) citySearchResults.innerHTML = "";
         showToast("Position détectée");
+
+        // Affine le libellé avec le nom de la ville une fois disponible
+        reverseGeocode(lat, lon).then(place => {
+          if (!place) return;
+          const current = loadLocation();
+          if (current && current.lat === lat && current.lon === lon) {
+            current.label = place;
+            saveLocation(current);
+            renderWeatherCard();
+          }
+        });
       },
       (err) => {
         done();
@@ -1190,12 +1218,27 @@
     renderList();
     renderWeatherCard();
     refreshWeather(false);
+    refineSavedLocationLabel();
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("service-worker.js").catch(() => {});
       });
     }
+  }
+
+  function refineSavedLocationLabel() {
+    const loc = loadLocation();
+    if (!loc || loc.source !== "geo" || loc.label !== "Ma position") return;
+    reverseGeocode(loc.lat, loc.lon).then(place => {
+      if (!place) return;
+      const current = loadLocation();
+      if (current && current.lat === loc.lat && current.lon === loc.lon) {
+        current.label = place;
+        saveLocation(current);
+        renderWeatherCard();
+      }
+    });
   }
 
   init();
