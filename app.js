@@ -599,6 +599,75 @@
     showToast("Vue ajustée au potager");
   });
 
+  /* ===================== Pincement à deux doigts (pinch-to-zoom) ===================== */
+  (function setupPinchZoom() {
+    let startDist = null;
+    let startZoom = 1;
+    let rafId = null;
+
+    function touchDist(t1, t2) {
+      return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+    }
+    function touchMid(t1, t2) {
+      return { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
+    }
+
+    canvasScroll.addEventListener("touchstart", (e) => {
+      if (e.touches.length === 2) {
+        startDist = touchDist(e.touches[0], e.touches[1]);
+        startZoom = zoomLevel;
+      }
+    }, { passive: true });
+
+    canvasScroll.addEventListener("touchmove", (e) => {
+      if (e.touches.length === 2 && startDist) {
+        e.preventDefault();
+        const t1 = e.touches[0], t2 = e.touches[1];
+        const newDist = touchDist(t1, t2);
+        const targetZoom = clamp(startZoom * (newDist / startDist), MIN_ZOOM, MAX_ZOOM);
+        const mid = touchMid(t1, t2);
+
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => {
+          const rect = canvasScroll.getBoundingClientRect();
+          const screenX = mid.x - rect.left;
+          const screenY = mid.y - rect.top;
+          const contentXMeters = (canvasScroll.scrollLeft + screenX) / PX_PER_M;
+          const contentYMeters = (canvasScroll.scrollTop + screenY) / PX_PER_M;
+
+          zoomLevel = targetZoom;
+          PX_PER_M = BASE_PX_PER_M * zoomLevel;
+          zoomLabel.textContent = Math.round(zoomLevel * 100) + "%";
+          repositionZonesLive();
+
+          canvasScroll.scrollLeft = contentXMeters * PX_PER_M - screenX;
+          canvasScroll.scrollTop = contentYMeters * PX_PER_M - screenY;
+        });
+      }
+    }, { passive: false });
+
+    function endPinch(e) {
+      if (startDist && e.touches.length < 2) {
+        startDist = null;
+        setZoom(zoomLevel); // arrondit au pas de 5% + rendu propre complet
+      }
+    }
+    canvasScroll.addEventListener("touchend", endPinch);
+    canvasScroll.addEventListener("touchcancel", endPinch);
+  })();
+
+  function repositionZonesLive() {
+    renderCanvasSize();
+    gardenCanvas.querySelectorAll(".zone").forEach(node => {
+      const zone = state.zones.find(z => z.id === node.dataset.id);
+      if (!zone) return;
+      node.style.left = (zone.x * PX_PER_M) + "px";
+      node.style.top = (zone.y * PX_PER_M) + "px";
+      node.style.width = (zone.w * PX_PER_M) + "px";
+      node.style.height = (zone.h * PX_PER_M) + "px";
+    });
+  }
+
   /* ===================== Rendu du plan ===================== */
   function renderCanvasSize() {
     const w = state.gardenW * PX_PER_M;

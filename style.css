@@ -176,12 +176,14 @@ main.wrap { padding: 0 18px; }
   grid-column: 1; grid-row: 1;
   background: var(--bg-card-2);
   position: sticky; top: 0; left: 0; z-index: 3;
+  pointer-events: none;
 }
 .ruler-top {
   grid-column: 2; grid-row: 1;
   position: sticky; top: 0; z-index: 2;
   background: var(--bg-card-2);
   display: flex;
+  pointer-events: none;
   font-size: 0.6rem;
   color: var(--ink-muted);
 }
@@ -190,6 +192,7 @@ main.wrap { padding: 0 18px; }
   position: sticky; left: 0; z-index: 2;
   background: var(--bg-card-2);
   display: flex;
+  pointer-events: none;
   flex-direction: column;
   font-size: 0.6rem;
   color: var(--ink-muted);
