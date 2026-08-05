@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Mon Potager</title>
 <meta name="theme-color" content="#4A3626">
-<link rel="manifest" href="manifest.json?v=13">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=13">
-<link rel="icon" href="icon-192.png?v=13">
-<link rel="stylesheet" href="style.css?v=13">
+<link rel="manifest" href="manifest.json?v=14">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=14">
+<link rel="icon" href="icon-192.png?v=14">
+<link rel="stylesheet" href="style.css?v=14">
 </head>
 <body>
 
 <header class="topbar">
   <div class="topbar-title">
-    <img class="logo-mark" src="icon-192.png?v=13" alt="" aria-hidden="true">
+    <img class="logo-mark" src="icon-192.png?v=14" alt="" aria-hidden="true">
     <h1>Mon Potager</h1>
   </div>
   <div class="topbar-actions">
@@ -152,8 +152,8 @@
       </div>
 
       <div class="field-group">
-        <span class="field-label">Notes</span>
-        <textarea id="zoneNotes" rows="3" placeholder="Arrosage, associations, semis…"></textarea>
+        <span class="field-label">Notes (particularités de la variété, etc.)</span>
+        <textarea id="zoneNotes" rows="3" placeholder="Ex : résiste au mildiou, besoin d'un tuteur plus long, récolte précoce…"></textarea>
       </div>
 
       <label class="field-checkbox">
@@ -186,8 +186,14 @@
 
       <div id="infoZoneCard" class="info-zone-card"></div>
 
+      <div id="infoVarietySearch" class="info-variety-search" hidden>
+        <span class="info-variety-search-text">Les besoins peuvent varier selon la variété exacte.</span>
+        <a id="infoVarietySearchLink" class="info-variety-search-link" href="#" target="_blank" rel="noopener">🔍 Chercher des infos sur cette variété</a>
+      </div>
+
       <div id="infoWeatherNote" class="info-weather-note" hidden></div>
 
+      <p class="info-fiche-title">Conseils généraux pour <span id="infoFicheeSpeciesName"></span></p>
       <div id="infoFiche">
         <div class="info-grid">
           <div class="info-item">
@@ -326,6 +332,6 @@
 
 <div id="toast" class="toast" hidden></div>
 
-<script src="app.js?v=13"></script>
+<script src="app.js?v=14"></script>
 </body>
 </html>

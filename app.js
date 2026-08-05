@@ -585,8 +585,12 @@
   const infoEmoji = el("infoEmoji");
   const infoName = el("infoName");
   const infoVarietyLine = el("infoVarietyLine");
+  const infoVarietySearch = el("infoVarietySearch");
+  const infoVarietySearchLink = el("infoVarietySearchLink");
   const infoZoneCard = el("infoZoneCard");
   const infoFiche = el("infoFiche");
+  const infoFicheeSpeciesName = el("infoFicheeSpeciesName");
+  const infoFicheTitle = document.querySelector(".info-fiche-title");
   const infoSoleil = el("infoSoleil");
   const infoArrosage = el("infoArrosage");
   const infoChaleur = el("infoChaleur");
@@ -1017,9 +1021,19 @@
     infoVarietyLine.textContent = zone.variety ? zone.variety : "";
     infoVarietyLine.hidden = !zone.variety;
 
+    if (zone.variety) {
+      const query = encodeURIComponent(`${plant.name} ${zone.variety} conseils de culture`);
+      infoVarietySearchLink.href = `https://www.google.com/search?q=${query}`;
+      infoVarietySearch.hidden = false;
+    } else {
+      infoVarietySearch.hidden = true;
+    }
+
     let zoneCardHtml = `<strong>${fmtM(zone.w)}×${fmtM(zone.h)} m</strong> · ${(zone.w * zone.h).toFixed(2).replace(".", ",")} m²`;
     if (zone.date) zoneCardHtml += ` · planté le ${formatDate(zone.date)}`;
     infoZoneCard.innerHTML = zoneCardHtml;
+
+    infoFicheeSpeciesName.textContent = plant.name.toLowerCase();
 
     if (info) {
       infoFiche.hidden = false;
@@ -1031,8 +1045,10 @@
       infoSemis.textContent = info.semis;
       infoRecolte.textContent = info.recolte;
       infoConseil.textContent = info.conseil;
+      infoFicheTitle.hidden = false;
     } else {
       infoFiche.hidden = true;
+      infoFicheTitle.hidden = true;
     }
 
     if (zone.notes) {
