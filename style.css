@@ -583,3 +583,62 @@ input[type="color"] { width: 44px; height: 40px; padding: 2px; border: 1px solid
   .modal-overlay { align-items: center; }
   .modal { border-radius: 18px; max-height: 80vh; }
 }
+
+/* ===== Barre de sélection d'année ===== */
+.year-bar { padding: 0 18px 12px; }
+.year-switch {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: 0.88rem; font-weight: 700; color: var(--ink);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.year-switch:active { background: var(--bg-card-2); }
+.year-chev { margin-left: auto; color: var(--ink-muted); font-size: 0.8rem; }
+.year-archive-tag {
+  font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;
+  background: var(--bg-card-2); color: var(--ink-muted);
+  border: 1px solid var(--border); border-radius: 20px;
+  padding: 2px 8px;
+}
+
+/* ===== Modale années ===== */
+.years-intro { font-size: 0.82rem; color: var(--ink-muted); line-height: 1.5; margin: 0 0 14px; }
+.years-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
+.year-card {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+}
+.year-card.year-card-active { border-color: var(--leaf); background: color-mix(in srgb, var(--leaf) 10%, var(--bg-card)); }
+.year-card-info { flex: 1; min-width: 0; }
+.year-card-title { font-size: 0.92rem; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 6px; }
+.year-card-sub { font-size: 0.76rem; color: var(--ink-muted); margin-top: 2px; }
+.year-badge {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  background: var(--leaf); color: #fff;
+  border-radius: 20px; padding: 2px 7px;
+}
+.year-card-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+.new-year-form { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+.year-mode-choice { display: flex; flex-direction: column; gap: 8px; }
+.year-mode-btn {
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--ink);
+  font-size: 0.85rem; font-weight: 600;
+  cursor: pointer;
+}
+.year-mode-btn.active { border-color: var(--leaf); background: color-mix(in srgb, var(--leaf) 14%, var(--bg-card)); color: var(--leaf); }
+.new-year-actions { display: flex; gap: 10px; margin-top: 16px; }
+.new-year-actions .btn { flex: 1; }

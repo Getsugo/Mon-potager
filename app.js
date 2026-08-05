@@ -366,8 +366,134 @@
     }
   }
 
-  /* ===================== État ===================== */
-  let state = loadState();
+  /* ===================== État (par année) ===================== */
+  const YEARS_KEY = "potager-years-v1";
+
+  function defaultYearData(label) {
+    return {
+      label: label,
+      gardenW: 4,
+      gardenH: 3,
+      zones: [],
+      createdAt: Date.now(),
+    };
+  }
+
+  function migrateOldSingleYearState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.zones)) return null;
+      const base = defaultYearData(String(new Date().getFullYear()));
+      return Object.assign(base, parsed, { label: base.label, createdAt: base.createdAt });
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function loadYearsData() {
+    try {
+      const raw = localStorage.getItem(YEARS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.years && parsed.currentYearId && parsed.years[parsed.currentYearId]) {
+          return parsed;
+        }
+      }
+    } catch (e) {}
+    // Migration depuis l'ancien format mono-année (une seule saison, pas d'historique)
+    const migrated = migrateOldSingleYearState();
+    const label = migrated ? migrated.label : String(new Date().getFullYear());
+    const id = "y" + Date.now().toString(36);
+    const years = {};
+    years[id] = migrated || defaultYearData(label);
+    return { currentYearId: id, years: years };
+  }
+
+  function saveYearsData() {
+    try {
+      localStorage.setItem(YEARS_KEY, JSON.stringify(yearsData));
+    } catch (e) {
+      showToast("Impossible d'enregistrer (stockage plein ?)");
+    }
+  }
+
+  function sortedYearIds() {
+    return Object.keys(yearsData.years).sort((a, b) => {
+      const ca = yearsData.years[a].createdAt || 0;
+      const cb = yearsData.years[b].createdAt || 0;
+      return cb - ca; // plus récent d'abord
+    });
+  }
+
+  function switchYear(yearId) {
+    if (!yearsData.years[yearId] || yearId === yearsData.currentYearId) return;
+    yearsData.currentYearId = yearId;
+    state = yearsData.years[yearId];
+    saveYearsData();
+    fullRerender();
+  }
+
+  function createYear(label, mode) {
+    const cleanLabel = (label || "").trim() || String(new Date().getFullYear());
+    const id = "y" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+    let data;
+    if (mode === "duplicate") {
+      data = JSON.parse(JSON.stringify(state));
+      data.label = cleanLabel;
+      data.createdAt = Date.now();
+      data.zones.forEach(z => { z.locked = false; });
+    } else {
+      data = defaultYearData(cleanLabel);
+      data.gardenW = state.gardenW;
+      data.gardenH = state.gardenH;
+    }
+    yearsData.years[id] = data;
+    yearsData.currentYearId = id;
+    state = data;
+    saveYearsData();
+    fullRerender();
+    return id;
+  }
+
+  function renameYear(yearId, newLabel) {
+    const y = yearsData.years[yearId];
+    if (!y) return;
+    const clean = (newLabel || "").trim();
+    if (!clean) return;
+    y.label = clean;
+    saveYearsData();
+    renderYearBar();
+  }
+
+  function deleteYear(yearId) {
+    const ids = Object.keys(yearsData.years);
+    if (ids.length <= 1) {
+      showToast("Impossible de supprimer la seule année");
+      return;
+    }
+    delete yearsData.years[yearId];
+    if (yearsData.currentYearId === yearId) {
+      const remaining = sortedYearIds();
+      yearsData.currentYearId = remaining[0];
+      state = yearsData.years[yearsData.currentYearId];
+    }
+    saveYearsData();
+    fullRerender();
+  }
+
+  function fullRerender() {
+    renderCanvasSize();
+    renderZones();
+    renderLegend();
+    updateStats();
+    renderList();
+    renderYearBar();
+  }
+
+  let yearsData = loadYearsData();
+  let state = yearsData.years[yearsData.currentYearId];
   let activeZoneId = null; // zone en cours d'édition dans la modale
   let selectedPlantId = PLANTS[0].id;
 
@@ -379,24 +505,8 @@
     };
   }
 
-  function loadState() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return defaultState();
-      const parsed = JSON.parse(raw);
-      if (!parsed || !Array.isArray(parsed.zones)) return defaultState();
-      return Object.assign(defaultState(), parsed);
-    } catch (e) {
-      return defaultState();
-    }
-  }
-
   function saveState() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (e) {
-      showToast("Impossible d'enregistrer (stockage plein ?)");
-    }
+    saveYearsData();
   }
 
   function uid() {
@@ -1265,6 +1375,112 @@
     }
   }
 
+  /* ===================== Sélecteur d'années ===================== */
+  const yearSwitchBtn = el("yearSwitchBtn");
+  const yearLabelDisplay = el("yearLabelDisplay");
+  const yearArchiveTag = el("yearArchiveTag");
+  const yearsModalOverlay = el("yearsModalOverlay");
+  const yearsModalClose = el("yearsModalClose");
+  const yearsList = el("yearsList");
+  const addYearBtn = el("addYearBtn");
+  const newYearForm = el("newYearForm");
+  const newYearLabel = el("newYearLabel");
+  const newYearBlankBtn = el("newYearBlankBtn");
+  const newYearDuplicateBtn = el("newYearDuplicateBtn");
+  const cancelNewYearBtn = el("cancelNewYearBtn");
+  const createYearBtn = el("createYearBtn");
+  let newYearMode = "blank";
+
+  function renderYearBar() {
+    yearLabelDisplay.textContent = state.label;
+    const ids = sortedYearIds();
+    const isLatest = ids[0] === yearsData.currentYearId;
+    yearArchiveTag.hidden = isLatest;
+  }
+
+  function renderYearsModal() {
+    yearsList.innerHTML = "";
+    sortedYearIds().forEach(id => {
+      const y = yearsData.years[id];
+      const isCurrent = id === yearsData.currentYearId;
+      const plantedArea = y.zones.reduce((sum, z) => sum + z.w * z.h, 0);
+      const card = document.createElement("div");
+      card.className = "year-card" + (isCurrent ? " year-card-active" : "");
+      card.innerHTML = `
+        <div class="year-card-info">
+          <div class="year-card-title">${escapeHtml(y.label)} ${isCurrent ? '<span class="year-badge">Actif</span>' : ""}</div>
+          <div class="year-card-sub">${y.zones.length} zone(s) · ${plantedArea.toFixed(2).replace(".", ",")} m² plantés</div>
+        </div>
+        <div class="year-card-actions">
+          <button class="icon-btn small year-rename-btn" aria-label="Renommer">✏️</button>
+          <button class="icon-btn small year-delete-btn" aria-label="Supprimer">🗑️</button>
+        </div>
+      `;
+      card.querySelector(".year-card-info").addEventListener("click", () => {
+        switchYear(id);
+        yearsModalOverlay.hidden = true;
+      });
+      card.querySelector(".year-rename-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        const next = prompt("Nouveau nom pour cette année :", y.label);
+        if (next && next.trim()) {
+          renameYear(id, next.trim());
+          renderYearsModal();
+        }
+      });
+      card.querySelector(".year-delete-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (Object.keys(yearsData.years).length <= 1) {
+          showToast("Impossible de supprimer la seule année");
+          return;
+        }
+        if (confirm(`Supprimer définitivement "${y.label}" et tout son contenu ?`)) {
+          deleteYear(id);
+          renderYearsModal();
+        }
+      });
+      yearsList.appendChild(card);
+    });
+  }
+
+  function openYearsModal() {
+    renderYearsModal();
+    newYearForm.hidden = true;
+    yearsModalOverlay.hidden = false;
+  }
+
+  yearSwitchBtn.addEventListener("click", openYearsModal);
+  yearsModalClose.addEventListener("click", () => { yearsModalOverlay.hidden = true; });
+  yearsModalOverlay.addEventListener("click", (e) => { if (e.target === yearsModalOverlay) yearsModalOverlay.hidden = true; });
+
+  addYearBtn.addEventListener("click", () => {
+    const nextLabel = String(new Date().getFullYear() + 1);
+    const existingLabels = Object.values(yearsData.years).map(y => y.label);
+    newYearLabel.value = existingLabels.includes(nextLabel) ? "" : nextLabel;
+    newYearMode = "blank";
+    newYearBlankBtn.classList.add("active");
+    newYearDuplicateBtn.classList.remove("active");
+    newYearForm.hidden = false;
+    newYearLabel.focus();
+  });
+  cancelNewYearBtn.addEventListener("click", () => { newYearForm.hidden = true; });
+  newYearBlankBtn.addEventListener("click", () => {
+    newYearMode = "blank";
+    newYearBlankBtn.classList.add("active");
+    newYearDuplicateBtn.classList.remove("active");
+  });
+  newYearDuplicateBtn.addEventListener("click", () => {
+    newYearMode = "duplicate";
+    newYearDuplicateBtn.classList.add("active");
+    newYearBlankBtn.classList.remove("active");
+  });
+  createYearBtn.addEventListener("click", () => {
+    createYear(newYearLabel.value, newYearMode);
+    newYearForm.hidden = true;
+    yearsModalOverlay.hidden = true;
+    showToast("Nouvelle année créée");
+  });
+
   /* ===================== Réglages ===================== */
   settingsBtn.addEventListener("click", () => {
     gardenWInput.value = state.gardenW;
@@ -1358,6 +1574,7 @@
     renderLegend();
     updateStats();
     renderList();
+    renderYearBar();
     renderWeatherCard();
     refreshWeather(false);
     refineSavedLocationLabel();

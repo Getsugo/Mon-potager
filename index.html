@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Mon Potager</title>
 <meta name="theme-color" content="#4A3626">
-<link rel="manifest" href="manifest.json?v=12">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=12">
-<link rel="icon" href="icon-192.png?v=12">
-<link rel="stylesheet" href="style.css?v=12">
+<link rel="manifest" href="manifest.json?v=13">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=13">
+<link rel="icon" href="icon-192.png?v=13">
+<link rel="stylesheet" href="style.css?v=13">
 </head>
 <body>
 
 <header class="topbar">
   <div class="topbar-title">
-    <img class="logo-mark" src="icon-192.png?v=12" alt="" aria-hidden="true">
+    <img class="logo-mark" src="icon-192.png?v=13" alt="" aria-hidden="true">
     <h1>Mon Potager</h1>
   </div>
   <div class="topbar-actions">
@@ -42,6 +42,15 @@
   <button class="tab active" data-tab="plan" role="tab" aria-selected="true">Plan</button>
   <button class="tab" data-tab="liste" role="tab" aria-selected="false">Liste</button>
 </nav>
+
+<div class="year-bar">
+  <button id="yearSwitchBtn" class="year-switch">
+    <span aria-hidden="true">📅</span>
+    <span id="yearLabelDisplay">2026</span>
+    <span id="yearArchiveTag" class="year-archive-tag" hidden>archive</span>
+    <span class="year-chev" aria-hidden="true">▾</span>
+  </button>
+</div>
 
 <main class="wrap">
 
@@ -226,6 +235,41 @@
   </div>
 </div>
 
+<!-- MODALE ANNÉES -->
+<div id="yearsModalOverlay" class="modal-overlay" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Mes années de potager</h2>
+      <button id="yearsModalClose" class="icon-btn" aria-label="Fermer">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="years-intro">Chaque année a son propre plan : tu peux garder un historique de ce que tu as planté et où, saison après saison.</p>
+      <div id="yearsList" class="years-list"></div>
+
+      <div id="newYearForm" class="new-year-form" hidden>
+        <div class="field-group">
+          <span class="field-label">Nom de la nouvelle année</span>
+          <input id="newYearLabel" type="text" placeholder="Ex : 2027">
+        </div>
+        <div class="field-group">
+          <span class="field-label">Contenu de départ</span>
+          <div class="year-mode-choice">
+            <button id="newYearBlankBtn" class="chip-btn year-mode-btn active" data-mode="blank" type="button">Potager vide</button>
+            <button id="newYearDuplicateBtn" class="chip-btn year-mode-btn" data-mode="duplicate" type="button">Dupliquer l'année actuelle</button>
+          </div>
+        </div>
+        <div class="new-year-actions">
+          <button id="cancelNewYearBtn" class="btn btn-secondary" type="button">Annuler</button>
+          <button id="createYearBtn" class="btn btn-primary" type="button">Créer cette année</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="addYearBtn" class="btn btn-primary">+ Nouvelle année</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODALE RÉGLAGES -->
 <div id="settingsModalOverlay" class="modal-overlay" hidden>
   <div class="modal">
@@ -282,6 +326,6 @@
 
 <div id="toast" class="toast" hidden></div>
 
-<script src="app.js?v=12"></script>
+<script src="app.js?v=13"></script>
 </body>
 </html>
