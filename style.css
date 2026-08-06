@@ -236,6 +236,7 @@ main.wrap { padding: 0 18px; }
 .zone.dragging { box-shadow: var(--shadow-lift); z-index: 5; opacity: 0.92; }
 .zone-emoji { font-size: 1.4rem; line-height: 1; }
 .zone-name { font-size: 0.72rem; font-weight: 700; color: var(--ink); margin-top: 2px; }
+.zone-species { font-size: 0.58rem; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.2px; }
 .zone-dims { font-size: 0.6rem; color: var(--ink-muted); }
 .zone-handle {
   position: absolute;
@@ -554,6 +555,17 @@ input[type="color"] { width: 44px; height: 40px; padding: 2px; border: 1px solid
   box-shadow: var(--shadow);
 }
 
+.zone-rotation-badge {
+  position: absolute;
+  left: 2px; bottom: 2px;
+  font-size: 0.8rem;
+  background: var(--sun);
+  border-radius: 50%;
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow);
+}
+
 /* ===== Note météo dans la fiche culture ===== */
 .info-weather-note {
   display: flex; align-items: flex-start; gap: 8px;
@@ -566,6 +578,40 @@ input[type="color"] { width: 44px; height: 40px; padding: 2px; border: 1px solid
   margin-bottom: 14px;
   line-height: 1.4;
 }
+
+/* ===== Note de rotation des cultures dans la fiche ===== */
+.info-rotation-note {
+  border-radius: 10px;
+  padding: 9px 11px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  margin-bottom: 14px;
+}
+.info-rotation-note.warn {
+  background: color-mix(in srgb, var(--sun) 16%, var(--bg-card));
+  border: 1px solid var(--sun);
+  color: var(--ink);
+}
+.info-rotation-note.ok {
+  background: color-mix(in srgb, var(--leaf) 12%, var(--bg-card));
+  border: 1px solid var(--leaf-light);
+  color: var(--ink);
+}
+
+.info-rotation-suggestion {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: color-mix(in srgb, var(--sky) 14%, var(--bg-card));
+  border: 1px solid var(--sky);
+  border-radius: 10px;
+  padding: 9px 11px;
+  font-size: 0.82rem;
+  color: var(--ink);
+  line-height: 1.45;
+  margin-bottom: 14px;
+}
+.info-rotation-suggestion strong { color: var(--sky); }
 
 /* ===== Localisation (réglages) ===== */
 .location-current { font-size: 0.82rem; color: var(--ink-muted); margin: 0 0 8px; }

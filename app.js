@@ -219,6 +219,117 @@
     return PLANT_INFO[zone.plantId] || null;
   }
 
+  /* ===================== Rotation des cultures ===================== */
+  // Familles botaniques : la même famille épuise/attire les mêmes éléments du sol
+  // et les mêmes maladies/parasites, d'où l'intérêt de ne pas la replanter au même
+  // endroit d'une année sur l'autre. "herbes" et "autre" ne sont pas classées
+  // (mélange de familles trop variable pour être fiable).
+  const PLANT_FAMILY = {
+    tomate: "Solanacées",
+    patate: "Solanacées",
+    poivron: "Solanacées",
+    aubergine: "Solanacées",
+    courgette: "Cucurbitacées",
+    courge: "Cucurbitacées",
+    haricot: "Fabacées (légumineuses)",
+    petitpois: "Fabacées (légumineuses)",
+    carotte: "Apiacées",
+    radis: "Brassicacées",
+    oignon: "Alliacées",
+    ail: "Alliacées",
+    salade: "Astéracées",
+    fraise: "Rosacées",
+  };
+
+  // Rotation classique en 4 temps : légumes-fruits gourmands, puis légumineuses
+  // qui régénèrent l'azote, puis légumes-feuilles qui en profitent, puis
+  // racines/alliacées peu exigeantes avant de relancer le cycle.
+  const ROTATION_ORDER = ["fruits", "legumineuses", "feuilles", "racines"];
+  const ROTATION_GROUP_LABELS = {
+    fruits: "légumes-fruits",
+    legumineuses: "légumineuses",
+    feuilles: "légumes-feuilles",
+    racines: "racines & alliacées",
+  };
+  const FAMILY_TO_GROUP = {
+    "Solanacées": "fruits",
+    "Cucurbitacées": "fruits",
+    "Fabacées (légumineuses)": "legumineuses",
+    "Astéracées": "feuilles",
+    "Rosacées": "feuilles",
+    "Apiacées": "racines",
+    "Brassicacées": "racines",
+    "Alliacées": "racines",
+  };
+
+  function plantsInGroup(group) {
+    return PLANTS.filter(p => FAMILY_TO_GROUP[PLANT_FAMILY[p.id]] === group);
+  }
+
+  // Que planter la prochaine fois à cet endroit, pour respecter le cycle ?
+  function getNextRotationSuggestion(zone) {
+    const family = PLANT_FAMILY[zone.plantId];
+    if (!family) return null;
+    const currentGroup = FAMILY_TO_GROUP[family];
+    if (!currentGroup) return null;
+    const idx = ROTATION_ORDER.indexOf(currentGroup);
+    const nextGroup = ROTATION_ORDER[(idx + 1) % ROTATION_ORDER.length];
+    const examples = plantsInGroup(nextGroup).map(p => p.name).join(", ");
+    return {
+      currentGroupLabel: ROTATION_GROUP_LABELS[currentGroup],
+      nextGroupLabel: ROTATION_GROUP_LABELS[nextGroup],
+      examples: examples,
+    };
+  }
+
+  function zonesOverlap(a, b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  }
+
+  function extractYearNumber(label) {
+    const m = String(label || "").match(/\d{4}/);
+    return m ? parseInt(m[0], 10) : null;
+  }
+
+  function findPreviousYearId() {
+    const ids = Object.keys(yearsData.years).filter(id => id !== yearsData.currentYearId);
+    if (ids.length === 0) return null;
+    const currentNum = extractYearNumber(state.label);
+    if (currentNum !== null) {
+      const numbered = ids
+        .map(id => ({ id: id, num: extractYearNumber(yearsData.years[id].label), createdAt: yearsData.years[id].createdAt || 0 }))
+        .filter(y => y.num !== null && y.num < currentNum);
+      if (numbered.length > 0) {
+        numbered.sort((a, b) => (b.num - a.num) || (b.createdAt - a.createdAt));
+        return numbered[0].id;
+      }
+    }
+    // Repli : l'année créée juste avant celle-ci (labels non numériques)
+    const currentCreatedAt = state.createdAt || 0;
+    const byTime = ids
+      .map(id => ({ id: id, createdAt: yearsData.years[id].createdAt || 0 }))
+      .filter(y => y.createdAt < currentCreatedAt);
+    if (byTime.length > 0) {
+      byTime.sort((a, b) => b.createdAt - a.createdAt);
+      return byTime[0].id;
+    }
+    return null;
+  }
+
+  // Vérifie une zone (position + plante) contre la famille plantée au même
+  // endroit l'année précédente. Retourne null si tout va bien / pas de donnée.
+  function getRotationWarning(zone) {
+    const family = PLANT_FAMILY[zone.plantId];
+    if (!family) return null;
+    const prevId = findPreviousYearId();
+    if (!prevId) return null;
+    const prevYear = yearsData.years[prevId];
+    const conflicts = prevYear.zones.filter(z => PLANT_FAMILY[z.plantId] === family && zonesOverlap(zone, z));
+    if (conflicts.length === 0) return null;
+    const names = Array.from(new Set(conflicts.map(z => getPlant(z).name))).join(", ");
+    return { family: family, prevLabel: prevYear.label, plantNames: names };
+  }
+
   /* ===================== Météo ===================== */
   const LOCATION_KEY = "potager-location";
   const WEATHER_CACHE_KEY = "potager-weather-cache";
@@ -573,6 +684,8 @@
   const weatherError = el("weatherError");
 
   const infoWeatherNote = el("infoWeatherNote");
+  const infoRotationNote = el("infoRotationNote");
+  const infoRotationSuggestion = el("infoRotationSuggestion");
 
   const locationLabelSettings = el("locationLabelSettings");
   const useMyLocationBtn = el("useMyLocationBtn");
@@ -618,6 +731,7 @@
   const zoneW = el("zoneW");
   const zoneH = el("zoneH");
   const zoneAreaPreview = el("zoneAreaPreview");
+  const zoneRotationHint = el("zoneRotationHint");
   const zoneDate = el("zoneDate");
   const zoneNotes = el("zoneNotes");
   const zoneLocked = el("zoneLocked");
@@ -831,11 +945,14 @@
     node.style.width = (zone.w * PX_PER_M) + "px";
     node.style.height = (zone.h * PX_PER_M) + "px";
     const badge = zoneWeatherBadge(zone);
+    const rotationWarning = getRotationWarning(zone);
     node.innerHTML = `
       ${badge ? `<span class="zone-badge" title="Alerte météo">${badge}</span>` : ""}
       ${zone.locked ? `<span class="zone-lock-badge" title="Planche verrouillée">🔒</span>` : ""}
+      ${rotationWarning ? `<span class="zone-rotation-badge" title="Même famille (${escapeHtml(rotationWarning.family)}) qu'en ${escapeHtml(rotationWarning.prevLabel)} à cet endroit">🔁</span>` : ""}
       <span class="zone-emoji">${plant.emoji}</span>
-      <span class="zone-name">${escapeHtml(plant.name)}</span>
+      <span class="zone-name">${escapeHtml(zone.variety ? zone.variety : plant.name)}</span>
+      ${zone.variety ? `<span class="zone-species">${escapeHtml(plant.name)}</span>` : ""}
       <span class="zone-dims">${fmtM(zone.w)}×${fmtM(zone.h)} m</span>
       <div class="zone-handle" title="Redimensionner"></div>
     `;
@@ -880,6 +997,7 @@
         node.classList.remove("dragging");
         saveState();
         updateStats();
+        renderZones();
       }
       handle.addEventListener("pointermove", onMove);
       handle.addEventListener("pointerup", onUp);
@@ -917,6 +1035,8 @@
         node.classList.remove("dragging");
         if (moved) {
           saveState();
+          updateStats();
+          renderZones();
         } else {
           openInfoModal(zone.id);
         }
@@ -959,12 +1079,12 @@
       card.style.setProperty("--zone-color", plant.color);
       const area = (zone.w * zone.h).toFixed(2).replace(".", ",");
       let sub = `${fmtM(zone.w)}×${fmtM(zone.h)} m · ${area} m²`;
-      if (zone.variety) sub += ` · ${escapeHtml(zone.variety)}`;
+      if (zone.variety) sub = `${escapeHtml(plant.name)} · ${sub}`;
       if (zone.date) sub += ` · planté le ${formatDate(zone.date)}`;
       card.innerHTML = `
         <span class="zone-card-emoji">${plant.emoji}</span>
         <div class="zone-card-info">
-          <div class="zone-card-title">${zone.locked ? "🔒 " : ""}${escapeHtml(plant.name)}</div>
+          <div class="zone-card-title">${zone.locked ? "🔒 " : ""}${escapeHtml(zone.variety ? zone.variety : plant.name)}</div>
           <div class="zone-card-sub">${sub}</div>
         </div>
         <span class="zone-card-chev">›</span>
@@ -1002,6 +1122,7 @@
         plantGrid.querySelectorAll(".plant-opt").forEach(n => n.classList.remove("selected"));
         opt.classList.add("selected");
         customPlantRow.hidden = p.id !== "autre";
+        updateZoneRotationHint();
       });
       plantGrid.appendChild(opt);
     });
@@ -1060,7 +1181,41 @@
 
     infoModalOverlay.hidden = false;
     updateInfoWeatherNote();
+    updateInfoRotationNote(zone);
+    updateInfoRotationSuggestion(zone);
     updateInfoLockBtn(zone);
+  }
+
+  function updateInfoRotationNote(zone) {
+    const family = PLANT_FAMILY[zone.plantId];
+    if (!family) {
+      infoRotationNote.hidden = true;
+      return;
+    }
+    const prevId = findPreviousYearId();
+    if (!prevId) {
+      infoRotationNote.hidden = true;
+      return;
+    }
+    const warning = getRotationWarning(zone);
+    infoRotationNote.hidden = false;
+    if (warning) {
+      infoRotationNote.className = "info-rotation-note warn";
+      infoRotationNote.innerHTML = `🔁 <strong>Rotation :</strong> en ${escapeHtml(warning.prevLabel)}, il y avait déjà ${escapeHtml(warning.plantNames)} ici (même famille : ${escapeHtml(family)}). Mieux vaut alterner les familles d'une année sur l'autre pour préserver le sol.`;
+    } else {
+      infoRotationNote.className = "info-rotation-note ok";
+      infoRotationNote.innerHTML = `✅ <strong>Rotation :</strong> pas de culture de la famille des ${escapeHtml(family)} à cet endroit en ${escapeHtml(yearsData.years[prevId].label)}.`;
+    }
+  }
+
+  function updateInfoRotationSuggestion(zone) {
+    const suggestion = getNextRotationSuggestion(zone);
+    if (!suggestion) {
+      infoRotationSuggestion.hidden = true;
+      return;
+    }
+    infoRotationSuggestion.hidden = false;
+    infoRotationSuggestion.innerHTML = `📅 <span><strong>La prochaine fois ici :</strong> plutôt des ${escapeHtml(suggestion.nextGroupLabel)} (ex : ${escapeHtml(suggestion.examples)}), après ces ${escapeHtml(suggestion.currentGroupLabel)}.</span>`;
   }
 
   function updateInfoLockBtn(zone) {
@@ -1120,6 +1275,7 @@
     zoneNotes.value = zone.notes || "";
     zoneLocked.checked = !!zone.locked;
     updateAreaPreview();
+    updateZoneRotationHint();
 
     zoneModalOverlay.hidden = false;
   }
@@ -1141,7 +1297,29 @@
     const h = parseFloat(zoneH.value) || 0;
     zoneAreaPreview.textContent = (w * h).toFixed(2).replace(".", ",") + " m²";
   }
-  [zoneW, zoneH].forEach(input => input.addEventListener("input", updateAreaPreview));
+  function updateZoneRotationHint() {
+    const family = PLANT_FAMILY[selectedPlantId];
+    if (!family) { zoneRotationHint.hidden = true; return; }
+    const prevId = findPreviousYearId();
+    if (!prevId) { zoneRotationHint.hidden = true; return; }
+    const tempZone = {
+      x: parseFloat(zoneX.value) || 0,
+      y: parseFloat(zoneY.value) || 0,
+      w: parseFloat(zoneW.value) || 0,
+      h: parseFloat(zoneH.value) || 0,
+      plantId: selectedPlantId,
+    };
+    const warning = getRotationWarning(tempZone);
+    zoneRotationHint.hidden = false;
+    if (warning) {
+      zoneRotationHint.className = "info-rotation-note warn";
+      zoneRotationHint.innerHTML = `🔁 En ${escapeHtml(warning.prevLabel)}, il y avait déjà ${escapeHtml(warning.plantNames)} ici (${escapeHtml(family)}). Mieux vaut alterner.`;
+    } else {
+      zoneRotationHint.className = "info-rotation-note ok";
+      zoneRotationHint.innerHTML = `✅ Pas de ${escapeHtml(family)} ici en ${escapeHtml(yearsData.years[prevId].label)}.`;
+    }
+  }
+  [zoneW, zoneH, zoneX, zoneY].forEach(input => input.addEventListener("input", () => { updateAreaPreview(); updateZoneRotationHint(); }));
 
   zoneModalClose.addEventListener("click", closeZoneModal);
   zoneModalOverlay.addEventListener("click", (e) => { if (e.target === zoneModalOverlay) closeZoneModal(); });

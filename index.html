@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Mon Potager</title>
 <meta name="theme-color" content="#4A3626">
-<link rel="manifest" href="manifest.json?v=14">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=14">
-<link rel="icon" href="icon-192.png?v=14">
-<link rel="stylesheet" href="style.css?v=14">
+<link rel="manifest" href="manifest.json?v=17">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=17">
+<link rel="icon" href="icon-192.png?v=17">
+<link rel="stylesheet" href="style.css?v=17">
 </head>
 <body>
 
 <header class="topbar">
   <div class="topbar-title">
-    <img class="logo-mark" src="icon-192.png?v=14" alt="" aria-hidden="true">
+    <img class="logo-mark" src="icon-192.png?v=17" alt="" aria-hidden="true">
     <h1>Mon Potager</h1>
   </div>
   <div class="topbar-actions">
@@ -144,6 +144,7 @@
           <label>Longueur <input id="zoneH" type="number" min="0.1" step="0.1"></label>
         </div>
         <p id="zoneAreaPreview" class="area-preview">0 m²</p>
+        <div id="zoneRotationHint" class="info-rotation-note" hidden></div>
       </div>
 
       <div class="field-group">
@@ -192,6 +193,9 @@
       </div>
 
       <div id="infoWeatherNote" class="info-weather-note" hidden></div>
+
+      <div id="infoRotationNote" class="info-rotation-note" hidden></div>
+      <div id="infoRotationSuggestion" class="info-rotation-suggestion" hidden></div>
 
       <p class="info-fiche-title">Conseils généraux pour <span id="infoFicheeSpeciesName"></span></p>
       <div id="infoFiche">
@@ -332,6 +336,6 @@
 
 <div id="toast" class="toast" hidden></div>
 
-<script src="app.js?v=14"></script>
+<script src="app.js?v=17"></script>
 </body>
 </html>
