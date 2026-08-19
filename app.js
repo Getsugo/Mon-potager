@@ -1048,19 +1048,47 @@
 
   /* ===================== Légende ===================== */
   function renderLegend() {
-    const usedIds = new Set(state.zones.map(z => z.plantId));
     legendGrid.innerHTML = "";
-    if (usedIds.size === 0) {
+    if (state.zones.length === 0) {
       legendGrid.innerHTML = `<p class="empty-sub" style="margin:0;">Ajoute une zone pour voir la légende.</p>`;
       return;
     }
     state.zones.forEach(zone => {
       const plant = getPlant(zone);
-      const item = document.createElement("div");
+      const item = document.createElement("button");
+      item.type = "button";
       item.className = "legend-item";
-      item.innerHTML = `<span class="legend-dot" style="background:${plant.color}"></span>${plant.emoji} ${escapeHtml(plant.name)}`;
+      item.innerHTML = `
+        <span class="legend-dot" style="background:${plant.color}"></span>
+        <span class="legend-emoji">${plant.emoji}</span>
+        <span class="legend-text">
+          <span class="legend-name">${escapeHtml(zone.variety ? zone.variety : plant.name)}</span>
+          ${zone.variety ? `<span class="legend-species">${escapeHtml(plant.name)}</span>` : ""}
+        </span>
+      `;
+      item.addEventListener("click", () => locateZoneOnPlan(zone.id));
       legendGrid.appendChild(item);
     });
+  }
+
+  function locateZoneOnPlan(zoneId) {
+    const node = gardenCanvas.querySelector(`.zone[data-id="${zoneId}"]`);
+    if (!node) return;
+    const RULER_W = 26, RULER_H = 20;
+    const absX = RULER_W + node.offsetLeft;
+    const absY = RULER_H + node.offsetTop;
+    const targetLeft = absX + node.offsetWidth / 2 - canvasScroll.clientWidth / 2;
+    const targetTop = absY + node.offsetHeight / 2 - canvasScroll.clientHeight / 2;
+    canvasScroll.scrollTo({
+      left: Math.max(0, targetLeft),
+      top: Math.max(0, targetTop),
+      behavior: "smooth",
+    });
+    node.classList.remove("zone-highlight");
+    // force le reflow pour pouvoir relancer l'animation si on clique plusieurs fois
+    void node.offsetWidth;
+    node.classList.add("zone-highlight");
+    setTimeout(() => node.classList.remove("zone-highlight"), 1500);
   }
 
   /* ===================== Liste ===================== */
