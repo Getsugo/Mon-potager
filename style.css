@@ -236,7 +236,7 @@ main.wrap { padding: 0 18px; }
 .zone.dragging { box-shadow: var(--shadow-lift); z-index: 5; opacity: 0.92; }
 .zone-emoji { font-size: 1.4rem; line-height: 1; }
 .zone-name { font-size: 0.72rem; font-weight: 700; color: var(--ink); margin-top: 2px; }
-.zone-species { font-size: 0.58rem; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.2px; }
+.zone-variety { font-size: 0.62rem; color: var(--ink-muted); }
 .zone-dims { font-size: 0.6rem; color: var(--ink-muted); }
 .zone-handle {
   position: absolute;
@@ -250,7 +250,7 @@ main.wrap { padding: 0 18px; }
 }
 
 /* ===== Zones verrouillées ===== */
-.zone.zone-locked { cursor: default; border-style: solid; }
+.zone.zone-locked { cursor: default; border-style: solid; touch-action: auto; }
 .zone.zone-locked:active { cursor: default; }
 .zone-locked .zone-handle { display: none; }
 .zone-lock-badge {
@@ -329,9 +329,8 @@ main.wrap { padding: 0 18px; }
   font-weight: 700;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.legend-species {
-  font-size: 0.58rem; color: var(--ink-muted);
-  text-transform: uppercase; letter-spacing: 0.2px;
+.legend-variety {
+  font-size: 0.62rem; color: var(--ink-muted);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }

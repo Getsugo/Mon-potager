@@ -948,11 +948,11 @@
     const rotationWarning = getRotationWarning(zone);
     node.innerHTML = `
       ${badge ? `<span class="zone-badge" title="Alerte météo">${badge}</span>` : ""}
-      ${zone.locked ? `<span class="zone-lock-badge" title="Planche verrouillée">🔒</span>` : ""}
+      ${zone.locked ? `<span class="zone-lock-badge" title="Planche verrouillée — appui long pour l'ouvrir">🔒</span>` : ""}
       ${rotationWarning ? `<span class="zone-rotation-badge" title="Même famille (${escapeHtml(rotationWarning.family)}) qu'en ${escapeHtml(rotationWarning.prevLabel)} à cet endroit">🔁</span>` : ""}
       <span class="zone-emoji">${plant.emoji}</span>
-      <span class="zone-name">${escapeHtml(zone.variety ? zone.variety : plant.name)}</span>
-      ${zone.variety ? `<span class="zone-species">${escapeHtml(plant.name)}</span>` : ""}
+      <span class="zone-name">${escapeHtml(plant.name)}</span>
+      ${zone.variety ? `<span class="zone-variety">${escapeHtml(zone.variety)}</span>` : ""}
       <span class="zone-dims">${fmtM(zone.w)}×${fmtM(zone.h)} m</span>
       <div class="zone-handle" title="Redimensionner"></div>
     `;
@@ -1005,13 +1005,50 @@
 
     node.addEventListener("pointerdown", (e) => {
       if (e.target === handle) return;
+
+      if (zone.locked) {
+        // Planche verrouillée : un appui long ouvre sa fiche (pour la déverrouiller
+        // ou la modifier), un tap rapide ou un glissement (pour naviguer sur la
+        // carte) ne fait rien — on ne capture pas le pointeur pour laisser le
+        // défilement natif fonctionner normalement au travers de la planche.
+        const startX = e.clientX, startY = e.clientY;
+        let cancelled = false;
+
+        const longPressTimer = setTimeout(() => {
+          if (cancelled) return;
+          cleanup();
+          node.classList.remove("zone-highlight");
+          void node.offsetWidth;
+          node.classList.add("zone-highlight");
+          openInfoModal(zone.id);
+          setTimeout(() => node.classList.remove("zone-highlight"), 1500);
+        }, 550);
+
+        function onMoveCheck(ev) {
+          if (Math.hypot(ev.clientX - startX, ev.clientY - startY) > MOVE_THRESHOLD) cancel();
+        }
+        function cancel() {
+          cancelled = true;
+          cleanup();
+        }
+        function cleanup() {
+          clearTimeout(longPressTimer);
+          window.removeEventListener("pointermove", onMoveCheck);
+          window.removeEventListener("pointerup", cancel);
+          window.removeEventListener("pointercancel", cancel);
+        }
+        window.addEventListener("pointermove", onMoveCheck);
+        window.addEventListener("pointerup", cancel, { once: true });
+        window.addEventListener("pointercancel", cancel, { once: true });
+        return;
+      }
+
       node.setPointerCapture(e.pointerId);
       const startX = e.clientX, startY = e.clientY;
       const startZx = zone.x, startZy = zone.y;
       let moved = false;
 
       function onMove(ev) {
-        if (zone.locked) return;
         const dxPx = ev.clientX - startX;
         const dyPx = ev.clientY - startY;
         if (!moved && Math.hypot(dxPx, dyPx) > MOVE_THRESHOLD) {
@@ -1062,8 +1099,8 @@
         <span class="legend-dot" style="background:${plant.color}"></span>
         <span class="legend-emoji">${plant.emoji}</span>
         <span class="legend-text">
-          <span class="legend-name">${escapeHtml(zone.variety ? zone.variety : plant.name)}</span>
-          ${zone.variety ? `<span class="legend-species">${escapeHtml(plant.name)}</span>` : ""}
+          <span class="legend-name">${escapeHtml(plant.name)}</span>
+          ${zone.variety ? `<span class="legend-variety">${escapeHtml(zone.variety)}</span>` : ""}
         </span>
       `;
       item.addEventListener("click", () => locateZoneOnPlan(zone.id));
@@ -1107,12 +1144,12 @@
       card.style.setProperty("--zone-color", plant.color);
       const area = (zone.w * zone.h).toFixed(2).replace(".", ",");
       let sub = `${fmtM(zone.w)}×${fmtM(zone.h)} m · ${area} m²`;
-      if (zone.variety) sub = `${escapeHtml(plant.name)} · ${sub}`;
+      if (zone.variety) sub = `${escapeHtml(zone.variety)} · ${sub}`;
       if (zone.date) sub += ` · planté le ${formatDate(zone.date)}`;
       card.innerHTML = `
         <span class="zone-card-emoji">${plant.emoji}</span>
         <div class="zone-card-info">
-          <div class="zone-card-title">${zone.locked ? "🔒 " : ""}${escapeHtml(zone.variety ? zone.variety : plant.name)}</div>
+          <div class="zone-card-title">${zone.locked ? "🔒 " : ""}${escapeHtml(plant.name)}</div>
           <div class="zone-card-sub">${sub}</div>
         </div>
         <span class="zone-card-chev">›</span>
