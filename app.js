@@ -756,6 +756,7 @@
   const gardenWInput = el("gardenW");
   const gardenHInput = el("gardenH");
   const applyGardenSize = el("applyGardenSize");
+  const exportPdfBtn = el("exportPdfBtn");
   const exportBtn = el("exportBtn");
   const importBtn = el("importBtn");
   const importFile = el("importFile");
@@ -1972,6 +1973,233 @@
     updateStats();
     showToast("Dimensions mises à jour");
   });
+
+  /* ===================== Export PDF (sans dépendance externe) ===================== */
+  function roundRectPath(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function hexToRgba(hex, alpha) {
+    const h = hex.replace("#", "");
+    const r = parseInt(h.substring(0, 2), 16);
+    const g = parseInt(h.substring(2, 4), 16);
+    const b = parseInt(h.substring(4, 6), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  function renderPlanToCanvas() {
+    const PAD = 44;
+    const CELL = 46; // px par mètre, plus grand qu'à l'écran pour une meilleure qualité d'impression
+    const RULER_L = 34, RULER_T = 30;
+    const HEADER_H = 96;
+    const LEGEND_ROW_H = 28;
+    const LEGEND_COLS = 2;
+    const legendRows = state.zones.length > 0 ? Math.ceil(state.zones.length / LEGEND_COLS) : 0;
+
+    const gridW = state.gardenW * CELL;
+    const gridH = state.gardenH * CELL;
+    const canvasW = Math.max(760, PAD * 2 + RULER_L + gridW);
+    const legendH = state.zones.length > 0 ? (34 + legendRows * LEGEND_ROW_H) : 20;
+    const canvasH = HEADER_H + RULER_T + gridH + PAD + legendH + PAD;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = canvasW;
+    canvas.height = canvasH;
+    const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "#FBF8EF";
+    ctx.fillRect(0, 0, canvasW, canvasH);
+
+    ctx.fillStyle = "#2B2114";
+    ctx.font = "bold 26px Georgia, 'Times New Roman', serif";
+    ctx.textAlign = "left";
+    ctx.fillText("🌱 Mon Potager", PAD, 42);
+    ctx.font = "14px Arial, sans-serif";
+    ctx.fillStyle = "#8a8170";
+    const surface = (state.gardenW * state.gardenH).toFixed(1).replace(".", ",");
+    const planted = state.zones.reduce((s, z) => s + z.w * z.h, 0).toFixed(1).replace(".", ",");
+    ctx.fillText(
+      `${state.label} · ${state.gardenW}×${state.gardenH} m (${surface} m²) · ${planted} m² plantés · exporté le ${new Date().toLocaleDateString("fr-FR")}`,
+      PAD, 66
+    );
+
+    const gx = PAD + RULER_L;
+    const gy = HEADER_H + RULER_T;
+
+    ctx.strokeStyle = "#DED6BC";
+    ctx.lineWidth = 1;
+    ctx.font = "11px Arial, sans-serif";
+    ctx.fillStyle = "#9a8f78";
+    for (let i = 0; i <= state.gardenW; i++) {
+      const x = gx + i * CELL;
+      ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy + gridH); ctx.stroke();
+      if (i < state.gardenW) ctx.fillText(String(i), x + 3, gy - 8);
+    }
+    for (let j = 0; j <= state.gardenH; j++) {
+      const y = gy + j * CELL;
+      ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx + gridW, y); ctx.stroke();
+      if (j < state.gardenH) ctx.fillText(String(j), gx - 20, y + 12);
+    }
+    ctx.strokeStyle = "#B7AD92";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(gx, gy, gridW, gridH);
+
+    state.zones.forEach(zone => {
+      const plant = getPlant(zone);
+      const zx = gx + zone.x * CELL;
+      const zy = gy + zone.y * CELL;
+      const zw = zone.w * CELL;
+      const zh = zone.h * CELL;
+
+      ctx.fillStyle = hexToRgba(plant.color, 0.22);
+      roundRectPath(ctx, zx, zy, zw, zh, 6);
+      ctx.fill();
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = plant.color;
+      ctx.lineWidth = 2;
+      roundRectPath(ctx, zx, zy, zw, zh, 6);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.textAlign = "center";
+      const cx = zx + zw / 2;
+      const cy = zy + zh / 2;
+      const showVariety = !!zone.variety && zh > 40;
+      ctx.font = "18px Arial, sans-serif";
+      ctx.fillStyle = "#2B2114";
+      ctx.fillText(plant.emoji, cx, cy - (showVariety ? 12 : 4));
+      ctx.font = "bold 12px Arial, sans-serif";
+      ctx.fillText(plant.name, cx, cy + (showVariety ? 8 : 16));
+      if (showVariety) {
+        ctx.font = "10px Arial, sans-serif";
+        ctx.fillStyle = "#8a8170";
+        ctx.fillText(zone.variety, cx, cy + 24);
+      }
+      ctx.textAlign = "left";
+    });
+
+    if (state.zones.length > 0) {
+      let ly = gy + gridH + 30;
+      ctx.font = "bold 14px Arial, sans-serif";
+      ctx.fillStyle = "#2B2114";
+      ctx.fillText("Légende", PAD, ly);
+      ly += 22;
+      const colW = (canvasW - PAD * 2) / LEGEND_COLS;
+      state.zones.forEach((zone, idx) => {
+        const plant = getPlant(zone);
+        const col = idx % LEGEND_COLS;
+        const row = Math.floor(idx / LEGEND_COLS);
+        const lx = PAD + col * colW;
+        const yy = ly + row * LEGEND_ROW_H;
+        ctx.fillStyle = plant.color;
+        ctx.beginPath(); ctx.arc(lx + 6, yy - 4, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#2B2114";
+        ctx.font = "12px Arial, sans-serif";
+        const label = zone.variety ? `${plant.name} — ${zone.variety}` : plant.name;
+        ctx.fillText(label, lx + 20, yy, colW - 24);
+      });
+    } else {
+      ctx.font = "13px Arial, sans-serif";
+      ctx.fillStyle = "#9a8f78";
+      ctx.fillText("Aucune planche pour l'instant.", PAD, gy + gridH + 26);
+    }
+
+    return canvas;
+  }
+
+  function base64ToUint8Array(base64) {
+    const binary = atob(base64.split(",").pop());
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+  }
+
+  // Construit un PDF minimal (une page, une image JPEG plein cadre) à la main,
+  // sans bibliothèque externe : c'est le format le plus simple valide.
+  function buildPdfFromJpeg(jpegDataUrl, widthPx, heightPx) {
+    const PX_TO_PT = 0.75; // 96dpi -> 72pt/inch
+    const widthPt = (widthPx * PX_TO_PT).toFixed(2);
+    const heightPt = (heightPx * PX_TO_PT).toFixed(2);
+    const jpegBytes = base64ToUint8Array(jpegDataUrl);
+
+    const enc = new TextEncoder();
+    const chunks = [];
+    let offset = 0;
+    const offsets = {};
+
+    function push(strOrBytes) {
+      const bytes = typeof strOrBytes === "string" ? enc.encode(strOrBytes) : strOrBytes;
+      chunks.push(bytes);
+      offset += bytes.length;
+    }
+
+    push("%PDF-1.4\n");
+
+    offsets[1] = offset;
+    push("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
+
+    offsets[2] = offset;
+    push("2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n");
+
+    offsets[3] = offset;
+    push(`3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${widthPt} ${heightPt}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>\nendobj\n`);
+
+    offsets[4] = offset;
+    push(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${widthPx} /Height ${heightPx} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpegBytes.length} >>\nstream\n`);
+    push(jpegBytes);
+    push("\nendstream\nendobj\n");
+
+    const content = `q\n${widthPt} 0 0 ${heightPt} 0 0 cm\n/Im0 Do\nQ`;
+    offsets[5] = offset;
+    push(`5 0 obj\n<< /Length ${content.length} >>\nstream\n${content}\nendstream\nendobj\n`);
+
+    const xrefStart = offset;
+    let xref = "xref\n0 6\n0000000000 65535 f \n";
+    for (let i = 1; i <= 5; i++) {
+      xref += String(offsets[i]).padStart(10, "0") + " 00000 n \n";
+    }
+    push(xref);
+    push(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF`);
+
+    const total = chunks.reduce((s, c) => s + c.length, 0);
+    const out = new Uint8Array(total);
+    let pos = 0;
+    for (const c of chunks) { out.set(c, pos); pos += c.length; }
+    return out;
+  }
+
+  function exportPlanToPdf() {
+    if (state.zones.length === 0) {
+      showToast("Ajoute au moins une planche avant d'exporter");
+      return;
+    }
+    try {
+      const canvas = renderPlanToCanvas();
+      const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+      const pdfBytes = buildPdfFromJpeg(jpegDataUrl, canvas.width, canvas.height);
+      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const safeLabel = state.label.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
+      a.href = url;
+      a.download = `mon-potager-${safeLabel || "plan"}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+      showToast("PDF exporté");
+    } catch (e) {
+      showToast("Impossible de générer le PDF");
+    }
+  }
+
+  exportPdfBtn.addEventListener("click", exportPlanToPdf);
 
   exportBtn.addEventListener("click", () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });

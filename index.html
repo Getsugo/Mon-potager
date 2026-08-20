@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Mon Potager</title>
 <meta name="theme-color" content="#4A3626">
-<link rel="manifest" href="manifest.json?v=21">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=21">
-<link rel="icon" href="icon-192.png?v=21">
-<link rel="stylesheet" href="style.css?v=21">
+<link rel="manifest" href="manifest.json?v=22">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=22">
+<link rel="icon" href="icon-192.png?v=22">
+<link rel="stylesheet" href="style.css?v=22">
 </head>
 <body>
 
 <header class="topbar">
   <div class="topbar-title">
-    <img class="logo-mark" src="icon-192.png?v=21" alt="" aria-hidden="true">
+    <img class="logo-mark" src="icon-192.png?v=22" alt="" aria-hidden="true">
     <h1>Mon Potager</h1>
   </div>
   <div class="topbar-actions">
@@ -380,6 +380,12 @@
       <hr class="divider">
 
       <div class="settings-actions">
+        <button id="exportPdfBtn" class="btn btn-secondary">🖨️ Exporter le plan en PDF</button>
+      </div>
+
+      <hr class="divider">
+
+      <div class="settings-actions">
         <button id="exportBtn" class="btn btn-secondary">Exporter (JSON)</button>
         <button id="importBtn" class="btn btn-secondary">Importer</button>
         <input id="importFile" type="file" accept="application/json" hidden>
@@ -398,6 +404,6 @@
 
 <div id="toast" class="toast" hidden></div>
 
-<script src="app.js?v=21"></script>
+<script src="app.js?v=22"></script>
 </body>
 </html>
