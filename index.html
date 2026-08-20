@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Mon Potager</title>
 <meta name="theme-color" content="#4A3626">
-<link rel="manifest" href="manifest.json?v=19">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=19">
-<link rel="icon" href="icon-192.png?v=19">
-<link rel="stylesheet" href="style.css?v=19">
+<link rel="manifest" href="manifest.json?v=20">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20">
+<link rel="icon" href="icon-192.png?v=20">
+<link rel="stylesheet" href="style.css?v=20">
 </head>
 <body>
 
 <header class="topbar">
   <div class="topbar-title">
-    <img class="logo-mark" src="icon-192.png?v=19" alt="" aria-hidden="true">
+    <img class="logo-mark" src="icon-192.png?v=20" alt="" aria-hidden="true">
     <h1>Mon Potager</h1>
   </div>
   <div class="topbar-actions">
@@ -49,6 +49,10 @@
     <span id="yearLabelDisplay">2026</span>
     <span id="yearArchiveTag" class="year-archive-tag" hidden>archive</span>
     <span class="year-chev" aria-hidden="true">▾</span>
+  </button>
+  <button id="memoBtn" class="memo-btn" aria-label="Mémo de l'année">
+    <span aria-hidden="true">📝</span>
+    <span id="memoBadge" class="memo-badge" hidden>0</span>
   </button>
 </div>
 
@@ -245,6 +249,27 @@
   </div>
 </div>
 
+<!-- MODALE MÉMO -->
+<div id="memoModalOverlay" class="modal-overlay" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Mémo <span id="memoYearLabel"></span></h2>
+      <button id="memoModalClose" class="icon-btn" aria-label="Fermer">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="years-intro">Des trucs à ne pas oublier pour cette saison : courses, tâches, idées…</p>
+
+      <div id="memoList" class="memo-list"></div>
+      <div id="memoEmpty" class="empty-sub" style="margin:8px 0 0;" hidden>Rien pour l'instant.</div>
+
+      <div class="memo-add-row">
+        <input id="memoInput" type="text" placeholder="Ex : acheter des tuteurs à tomates…" maxlength="200">
+        <button id="memoAddBtn" class="btn btn-primary" type="button">Ajouter</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODALE ANNÉES -->
 <div id="yearsModalOverlay" class="modal-overlay" hidden>
   <div class="modal">
@@ -336,6 +361,6 @@
 
 <div id="toast" class="toast" hidden></div>
 
-<script src="app.js?v=19"></script>
+<script src="app.js?v=20"></script>
 </body>
 </html>

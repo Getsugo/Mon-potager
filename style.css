@@ -684,7 +684,7 @@ input[type="color"] { width: 44px; height: 40px; padding: 2px; border: 1px solid
 }
 
 /* ===== Barre de sélection d'année ===== */
-.year-bar { padding: 0 18px 12px; }
+.year-bar { padding: 0 18px 12px; display: flex; gap: 8px; }
 .year-switch {
   display: flex; align-items: center; gap: 8px;
   background: var(--bg-card);
@@ -694,6 +694,8 @@ input[type="color"] { width: 44px; height: 40px; padding: 2px; border: 1px solid
   font-size: 0.88rem; font-weight: 700; color: var(--ink);
   cursor: pointer;
   box-shadow: var(--shadow);
+  flex: 1;
+  min-width: 0;
 }
 .year-switch:active { background: var(--bg-card-2); }
 .year-chev { margin-left: auto; color: var(--ink-muted); font-size: 0.8rem; }
@@ -703,6 +705,54 @@ input[type="color"] { width: 44px; height: 40px; padding: 2px; border: 1px solid
   border: 1px solid var(--border); border-radius: 20px;
   padding: 2px 8px;
 }
+
+.memo-btn {
+  position: relative;
+  flex-shrink: 0;
+  width: 42px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 1.05rem;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.memo-btn:active { background: var(--bg-card-2); }
+.memo-badge {
+  position: absolute;
+  top: -5px; right: -5px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.62rem; font-weight: 700;
+  min-width: 16px; height: 16px;
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 3px;
+  box-shadow: 0 0 0 2px var(--bg-page);
+}
+
+/* ===== Modale mémo ===== */
+.memo-list { display: flex; flex-direction: column; gap: 8px; }
+.memo-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.memo-item input[type="checkbox"] {
+  width: 19px; height: 19px; flex-shrink: 0; accent-color: var(--leaf); cursor: pointer;
+}
+.memo-item-text { flex: 1; font-size: 0.86rem; color: var(--ink); word-break: break-word; cursor: pointer; }
+.memo-item.done .memo-item-text { text-decoration: line-through; color: var(--ink-muted); }
+.memo-item-delete {
+  flex-shrink: 0;
+  background: none; border: none; color: var(--ink-muted);
+  font-size: 1rem; cursor: pointer; padding: 2px 4px;
+}
+.memo-item-delete:active { color: var(--danger); }
+.memo-add-row { display: flex; gap: 8px; margin-top: 14px; }
+.memo-add-row input { flex: 1; }
 
 /* ===== Modale années ===== */
 .years-intro { font-size: 0.82rem; color: var(--ink-muted); line-height: 1.5; margin: 0 0 14px; }

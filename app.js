@@ -486,6 +486,7 @@
       gardenW: 4,
       gardenH: 3,
       zones: [],
+      memo: [],
       createdAt: Date.now(),
     };
   }
@@ -504,22 +505,30 @@
   }
 
   function loadYearsData() {
+    let data;
     try {
       const raw = localStorage.getItem(YEARS_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && parsed.years && parsed.currentYearId && parsed.years[parsed.currentYearId]) {
-          return parsed;
+          data = parsed;
         }
       }
     } catch (e) {}
-    // Migration depuis l'ancien format mono-année (une seule saison, pas d'historique)
-    const migrated = migrateOldSingleYearState();
-    const label = migrated ? migrated.label : String(new Date().getFullYear());
-    const id = "y" + Date.now().toString(36);
-    const years = {};
-    years[id] = migrated || defaultYearData(label);
-    return { currentYearId: id, years: years };
+    if (!data) {
+      // Migration depuis l'ancien format mono-année (une seule saison, pas d'historique)
+      const migrated = migrateOldSingleYearState();
+      const label = migrated ? migrated.label : String(new Date().getFullYear());
+      const id = "y" + Date.now().toString(36);
+      const years = {};
+      years[id] = migrated || defaultYearData(label);
+      data = { currentYearId: id, years: years };
+    }
+    // Compatibilité : les années créées avant l'ajout du mémo n'ont pas ce champ
+    Object.values(data.years).forEach(y => {
+      if (!Array.isArray(y.memo)) y.memo = [];
+    });
+    return data;
   }
 
   function saveYearsData() {
@@ -555,6 +564,7 @@
       data.label = cleanLabel;
       data.createdAt = Date.now();
       data.zones.forEach(z => { z.locked = false; });
+      data.memo = []; // le mémo est spécifique à la saison, on repart à zéro
     } else {
       data = defaultYearData(cleanLabel);
       data.gardenW = state.gardenW;
@@ -1655,7 +1665,83 @@
     const ids = sortedYearIds();
     const isLatest = ids[0] === yearsData.currentYearId;
     yearArchiveTag.hidden = isLatest;
+    updateMemoBadge();
   }
+
+  /* ===================== Mémo de l'année ===================== */
+  const memoBtn = el("memoBtn");
+  const memoBadge = el("memoBadge");
+  const memoModalOverlay = el("memoModalOverlay");
+  const memoModalClose = el("memoModalClose");
+  const memoYearLabel = el("memoYearLabel");
+  const memoList = el("memoList");
+  const memoEmpty = el("memoEmpty");
+  const memoInput = el("memoInput");
+  const memoAddBtn = el("memoAddBtn");
+
+  function updateMemoBadge() {
+    const pending = (state.memo || []).filter(m => !m.done).length;
+    memoBadge.hidden = pending === 0;
+    memoBadge.textContent = pending > 99 ? "99+" : String(pending);
+  }
+
+  function renderMemoList() {
+    memoList.innerHTML = "";
+    const items = state.memo || [];
+    memoEmpty.hidden = items.length > 0;
+    items.forEach(item => {
+      const row = document.createElement("div");
+      row.className = "memo-item" + (item.done ? " done" : "");
+      row.innerHTML = `
+        <input type="checkbox" ${item.done ? "checked" : ""} aria-label="Marquer comme fait">
+        <span class="memo-item-text">${escapeHtml(item.text)}</span>
+        <button class="memo-item-delete" aria-label="Supprimer">✕</button>
+      `;
+      row.querySelector("input").addEventListener("change", () => {
+        item.done = !item.done;
+        saveState();
+        row.className = "memo-item" + (item.done ? " done" : "");
+        updateMemoBadge();
+      });
+      row.querySelector(".memo-item-text").addEventListener("click", () => {
+        row.querySelector("input").click();
+      });
+      row.querySelector(".memo-item-delete").addEventListener("click", () => {
+        state.memo = state.memo.filter(m => m.id !== item.id);
+        saveState();
+        renderMemoList();
+        updateMemoBadge();
+      });
+      memoList.appendChild(row);
+    });
+  }
+
+  function addMemoItem() {
+    const text = memoInput.value.trim();
+    if (!text) return;
+    if (!Array.isArray(state.memo)) state.memo = [];
+    state.memo.push({ id: uid(), text: text, done: false });
+    saveState();
+    memoInput.value = "";
+    renderMemoList();
+    updateMemoBadge();
+    memoInput.focus();
+  }
+
+  function openMemoModal() {
+    memoYearLabel.textContent = "— " + state.label;
+    renderMemoList();
+    memoModalOverlay.hidden = false;
+    memoInput.focus();
+  }
+
+  memoBtn.addEventListener("click", openMemoModal);
+  memoModalClose.addEventListener("click", () => { memoModalOverlay.hidden = true; });
+  memoModalOverlay.addEventListener("click", (e) => { if (e.target === memoModalOverlay) memoModalOverlay.hidden = true; });
+  memoAddBtn.addEventListener("click", addMemoItem);
+  memoInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); addMemoItem(); }
+  });
 
   function renderYearsModal() {
     yearsList.innerHTML = "";
