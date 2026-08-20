@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Mon Potager</title>
 <meta name="theme-color" content="#4A3626">
-<link rel="manifest" href="manifest.json?v=20">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20">
-<link rel="icon" href="icon-192.png?v=20">
-<link rel="stylesheet" href="style.css?v=20">
+<link rel="manifest" href="manifest.json?v=21">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=21">
+<link rel="icon" href="icon-192.png?v=21">
+<link rel="stylesheet" href="style.css?v=21">
 </head>
 <body>
 
 <header class="topbar">
   <div class="topbar-title">
-    <img class="logo-mark" src="icon-192.png?v=20" alt="" aria-hidden="true">
+    <img class="logo-mark" src="icon-192.png?v=21" alt="" aria-hidden="true">
     <h1>Mon Potager</h1>
   </div>
   <div class="topbar-actions">
@@ -53,6 +53,10 @@
   <button id="memoBtn" class="memo-btn" aria-label="Mémo de l'année">
     <span aria-hidden="true">📝</span>
     <span id="memoBadge" class="memo-badge" hidden>0</span>
+  </button>
+  <button id="budgetBtn" class="memo-btn" aria-label="Budget de l'année">
+    <span aria-hidden="true">💰</span>
+    <span id="budgetBadge" class="memo-badge budget-badge" hidden>0 €</span>
   </button>
 </div>
 
@@ -270,6 +274,39 @@
   </div>
 </div>
 
+<!-- MODALE BUDGET -->
+<div id="budgetModalOverlay" class="modal-overlay" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Budget <span id="budgetYearLabel"></span></h2>
+      <button id="budgetModalClose" class="icon-btn" aria-label="Fermer">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="years-intro">Ce que tu dépenses pour cette saison : graines, terreau, outils…</p>
+
+      <div class="budget-total">
+        <span class="budget-total-label">Total dépensé</span>
+        <span id="budgetTotal" class="budget-total-value">0,00 €</span>
+      </div>
+      <div id="budgetBreakdown" class="budget-breakdown"></div>
+
+      <div id="budgetList" class="memo-list"></div>
+      <div id="budgetEmpty" class="empty-sub" style="margin:8px 0 0;" hidden>Aucune dépense pour l'instant.</div>
+
+      <div class="budget-add-form">
+        <span class="field-label">Ajouter une dépense</span>
+        <input id="budgetLabel" type="text" placeholder="Ex : graines de tomates" maxlength="120">
+        <div class="budget-add-row2">
+          <input id="budgetAmount" type="number" min="0" step="0.01" placeholder="Montant €" inputmode="decimal">
+          <select id="budgetCategory"></select>
+        </div>
+        <input id="budgetDate" type="date">
+        <button id="budgetAddBtn" class="btn btn-primary" type="button">Ajouter la dépense</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODALE ANNÉES -->
 <div id="yearsModalOverlay" class="modal-overlay" hidden>
   <div class="modal">
@@ -361,6 +398,6 @@
 
 <div id="toast" class="toast" hidden></div>
 
-<script src="app.js?v=20"></script>
+<script src="app.js?v=21"></script>
 </body>
 </html>

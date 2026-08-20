@@ -487,6 +487,7 @@
       gardenH: 3,
       zones: [],
       memo: [],
+      budget: [],
       createdAt: Date.now(),
     };
   }
@@ -524,9 +525,10 @@
       years[id] = migrated || defaultYearData(label);
       data = { currentYearId: id, years: years };
     }
-    // Compatibilité : les années créées avant l'ajout du mémo n'ont pas ce champ
+    // Compatibilité : les années créées avant l'ajout du mémo/budget n'ont pas ces champs
     Object.values(data.years).forEach(y => {
       if (!Array.isArray(y.memo)) y.memo = [];
+      if (!Array.isArray(y.budget)) y.budget = [];
     });
     return data;
   }
@@ -565,6 +567,7 @@
       data.createdAt = Date.now();
       data.zones.forEach(z => { z.locked = false; });
       data.memo = []; // le mémo est spécifique à la saison, on repart à zéro
+      data.budget = []; // idem pour le budget
     } else {
       data = defaultYearData(cleanLabel);
       data.gardenW = state.gardenW;
@@ -1666,6 +1669,7 @@
     const isLatest = ids[0] === yearsData.currentYearId;
     yearArchiveTag.hidden = isLatest;
     updateMemoBadge();
+    updateBudgetBadge();
   }
 
   /* ===================== Mémo de l'année ===================== */
@@ -1742,6 +1746,122 @@
   memoInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") { e.preventDefault(); addMemoItem(); }
   });
+
+  /* ===================== Budget de l'année ===================== */
+  const BUDGET_CATEGORIES = [
+    { id: "graines", emoji: "🌱", label: "Graines & plants" },
+    { id: "terreau", emoji: "🪴", label: "Terreau & engrais" },
+    { id: "outils", emoji: "🧰", label: "Outils & matériel" },
+    { id: "arrosage", emoji: "💧", label: "Arrosage" },
+    { id: "autre", emoji: "🧾", label: "Autre" },
+  ];
+  function getBudgetCategory(id) {
+    return BUDGET_CATEGORIES.find(c => c.id === id) || BUDGET_CATEGORIES[BUDGET_CATEGORIES.length - 1];
+  }
+  function euroFmt(n) {
+    return n.toFixed(2).replace(".", ",") + " €";
+  }
+
+  const budgetBtn = el("budgetBtn");
+  const budgetBadge = el("budgetBadge");
+  const budgetModalOverlay = el("budgetModalOverlay");
+  const budgetModalClose = el("budgetModalClose");
+  const budgetYearLabel = el("budgetYearLabel");
+  const budgetTotal = el("budgetTotal");
+  const budgetBreakdown = el("budgetBreakdown");
+  const budgetList = el("budgetList");
+  const budgetEmpty = el("budgetEmpty");
+  const budgetLabelInput = el("budgetLabel");
+  const budgetAmountInput = el("budgetAmount");
+  const budgetCategorySelect = el("budgetCategory");
+  const budgetDateInput = el("budgetDate");
+  const budgetAddBtn = el("budgetAddBtn");
+
+  budgetCategorySelect.innerHTML = BUDGET_CATEGORIES.map(c => `<option value="${c.id}">${c.emoji} ${c.label}</option>`).join("");
+
+  function updateBudgetBadge() {
+    const total = (state.budget || []).reduce((sum, b) => sum + b.amount, 0);
+    budgetBadge.hidden = total <= 0;
+    budgetBadge.textContent = Math.round(total) + " €";
+  }
+
+  function renderBudgetList() {
+    const entries = state.budget || [];
+    const total = entries.reduce((sum, b) => sum + b.amount, 0);
+    budgetTotal.textContent = euroFmt(total);
+
+    budgetBreakdown.innerHTML = "";
+    BUDGET_CATEGORIES.forEach(c => {
+      const sub = entries.filter(b => b.category === c.id).reduce((sum, b) => sum + b.amount, 0);
+      if (sub > 0) {
+        const chip = document.createElement("span");
+        chip.className = "budget-chip";
+        chip.textContent = `${c.emoji} ${euroFmt(sub)}`;
+        budgetBreakdown.appendChild(chip);
+      }
+    });
+
+    budgetList.innerHTML = "";
+    budgetEmpty.hidden = entries.length > 0;
+    // Les plus récentes dépenses en premier
+    const sorted = entries.slice().sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    sorted.forEach(entry => {
+      const cat = getBudgetCategory(entry.category);
+      const row = document.createElement("div");
+      row.className = "memo-item";
+      row.innerHTML = `
+        <span class="budget-item-cat" title="${escapeHtml(cat.label)}">${cat.emoji}</span>
+        <div class="budget-item-info">
+          <div class="budget-item-label">${escapeHtml(entry.label)}</div>
+          <div class="budget-item-date">${entry.date ? formatDate(entry.date) : ""}</div>
+        </div>
+        <span class="budget-item-amount">${euroFmt(entry.amount)}</span>
+        <button class="memo-item-delete" aria-label="Supprimer">✕</button>
+      `;
+      row.querySelector(".memo-item-delete").addEventListener("click", () => {
+        state.budget = state.budget.filter(b => b.id !== entry.id);
+        saveState();
+        renderBudgetList();
+        updateBudgetBadge();
+      });
+      budgetList.appendChild(row);
+    });
+  }
+
+  function addBudgetEntry() {
+    const label = budgetLabelInput.value.trim();
+    const amount = parseFloat(budgetAmountInput.value);
+    if (!label || isNaN(amount) || amount <= 0) {
+      showToast("Ajoute un nom et un montant valide");
+      return;
+    }
+    if (!Array.isArray(state.budget)) state.budget = [];
+    state.budget.push({
+      id: uid(),
+      label: label,
+      amount: amount,
+      category: budgetCategorySelect.value,
+      date: budgetDateInput.value || new Date().toISOString().slice(0, 10),
+    });
+    saveState();
+    budgetLabelInput.value = "";
+    budgetAmountInput.value = "";
+    renderBudgetList();
+    updateBudgetBadge();
+    budgetLabelInput.focus();
+  }
+
+  function openBudgetModal() {
+    budgetYearLabel.textContent = "— " + state.label;
+    budgetDateInput.value = new Date().toISOString().slice(0, 10);
+    renderBudgetList();
+    budgetModalOverlay.hidden = false;
+  }
+
+  budgetBtn.addEventListener("click", openBudgetModal);
+  budgetModalClose.addEventListener("click", () => { budgetModalOverlay.hidden = true; });
+  budgetModalOverlay.addEventListener("click", (e) => { if (e.target === budgetModalOverlay) budgetModalOverlay.hidden = true; });
+  budgetAddBtn.addEventListener("click", addBudgetEntry);
 
   function renderYearsModal() {
     yearsList.innerHTML = "";

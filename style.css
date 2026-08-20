@@ -754,6 +754,45 @@ input[type="color"] { width: 44px; height: 40px; padding: 2px; border: 1px solid
 .memo-add-row { display: flex; gap: 8px; margin-top: 14px; }
 .memo-add-row input { flex: 1; }
 
+.budget-badge { background: var(--leaf); }
+
+/* ===== Modale budget ===== */
+.budget-total {
+  display: flex; align-items: center; justify-content: space-between;
+  background: color-mix(in srgb, var(--leaf) 12%, var(--bg-card));
+  border: 1px solid var(--leaf-light);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.budget-total-label { font-size: 0.82rem; color: var(--ink-muted); font-weight: 600; }
+.budget-total-value { font-size: 1.3rem; font-weight: 700; color: var(--leaf); }
+
+.budget-breakdown { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.budget-chip {
+  font-size: 0.7rem; font-weight: 600;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 10px;
+  color: var(--ink);
+}
+
+.budget-item-amount { font-weight: 700; color: var(--ink); flex-shrink: 0; font-size: 0.85rem; }
+.budget-item-cat { font-size: 1rem; flex-shrink: 0; }
+.budget-item-info { flex: 1; min-width: 0; }
+.budget-item-label { font-size: 0.85rem; color: var(--ink); word-break: break-word; }
+.budget-item-date { font-size: 0.68rem; color: var(--ink-muted); margin-top: 1px; }
+
+.budget-add-form {
+  margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.budget-add-row2 { display: flex; gap: 8px; }
+.budget-add-row2 input { flex: 1; min-width: 0; }
+.budget-add-row2 select { flex: 1; min-width: 0; }
+#budgetAddBtn { margin-top: 4px; }
+
 /* ===== Modale années ===== */
 .years-intro { font-size: 0.82rem; color: var(--ink-muted); line-height: 1.5; margin: 0 0 14px; }
 .years-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
