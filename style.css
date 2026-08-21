@@ -535,7 +535,116 @@ input[type="color"] { width: 44px; height: 40px; padding: 2px; border: 1px solid
   padding-top: 12px;
 }
 
+.info-section-block { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+
+/* ===== Associations (compagnonnage) ===== */
+.info-companion-section { margin-bottom: 4px; }
+.info-companion-list { display: flex; flex-direction: column; gap: 6px; }
+.companion-row {
+  display: flex; align-items: center; gap: 8px;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+.companion-row.good { background: color-mix(in srgb, var(--leaf) 12%, var(--bg-card)); border: 1px solid var(--leaf-light); color: var(--ink); }
+.companion-row.bad { background: color-mix(in srgb, var(--danger) 12%, var(--bg-card)); border: 1px solid var(--danger); color: var(--ink); }
+
+/* ===== Photos ===== */
+.info-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.info-photo-thumb {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+.info-photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.info-photo-thumb .photo-delete {
+  position: absolute; top: 2px; right: 2px;
+  width: 20px; height: 20px;
+  background: rgba(0,0,0,0.55); color: #fff;
+  border: none; border-radius: 50%;
+  font-size: 0.7rem; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.info-photo-thumb .photo-date {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+  color: #fff; font-size: 0.55rem; padding: 8px 4px 3px; text-align: center;
+}
+
+.photo-lightbox {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.9);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.photo-lightbox img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+.photo-lightbox-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(255,255,255,0.15); color: #fff;
+  border: none; font-size: 1.1rem; cursor: pointer;
+}
+
+/* ===== Carnet de récolte ===== */
+.harvest-summary {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 10px;
+}
+.harvest-add-row { display: flex; gap: 8px; margin-top: 12px; }
+.harvest-add-row input { flex: 1; min-width: 0; }
+.harvest-add-row select { flex-shrink: 0; width: 92px; }
+.harvest-item-qty { font-weight: 700; color: var(--leaf); font-size: 0.85rem; flex-shrink: 0; }
+
 .divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
+/* ===== Bannière des tâches du mois ===== */
+.tasks-banner {
+  background: color-mix(in srgb, var(--sun) 14%, var(--bg-card));
+  border: 1px solid var(--sun);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.tasks-banner-toggle {
+  width: 100%;
+  display: flex; align-items: center; gap: 8px;
+  background: none; border: none;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+.tasks-banner-title { font-size: 0.85rem; font-weight: 700; color: var(--ink); }
+.tasks-banner-count {
+  background: var(--sun); color: #fff;
+  font-size: 0.68rem; font-weight: 700;
+  border-radius: 20px; padding: 2px 8px;
+}
+.tasks-banner-chev { margin-left: auto; color: var(--ink-muted); font-size: 0.8rem; transition: transform 0.2s; }
+.tasks-banner.open .tasks-banner-chev { transform: rotate(180deg); }
+.tasks-banner-list { padding: 0 14px 12px; display: flex; flex-direction: column; gap: 6px; }
+.task-row {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+.task-row-emoji { font-size: 1rem; flex-shrink: 0; }
 
 /* ===== Carte météo ===== */
 .weather-card {

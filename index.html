@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Mon Potager</title>
 <meta name="theme-color" content="#4A3626">
-<link rel="manifest" href="manifest.json?v=22">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=22">
-<link rel="icon" href="icon-192.png?v=22">
-<link rel="stylesheet" href="style.css?v=22">
+<link rel="manifest" href="manifest.json?v=23">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=23">
+<link rel="icon" href="icon-192.png?v=23">
+<link rel="stylesheet" href="style.css?v=23">
 </head>
 <body>
 
 <header class="topbar">
   <div class="topbar-title">
-    <img class="logo-mark" src="icon-192.png?v=22" alt="" aria-hidden="true">
+    <img class="logo-mark" src="icon-192.png?v=23" alt="" aria-hidden="true">
     <h1>Mon Potager</h1>
   </div>
   <div class="topbar-actions">
@@ -63,6 +63,15 @@
 <main class="wrap">
 
   <section id="panelPlan" class="panel">
+
+    <div id="tasksBanner" class="tasks-banner" hidden>
+      <button id="tasksBannerToggle" class="tasks-banner-toggle" type="button">
+        <span class="tasks-banner-title">📋 À faire en <span id="tasksBannerMonth"></span></span>
+        <span id="tasksBannerCount" class="tasks-banner-count"></span>
+        <span class="tasks-banner-chev">▾</span>
+      </button>
+      <div id="tasksBannerList" class="tasks-banner-list" hidden></div>
+    </div>
 
     <div id="weatherCard" class="weather-card">
       <div id="weatherPrompt" class="weather-prompt">
@@ -204,6 +213,10 @@
 
       <div id="infoRotationNote" class="info-rotation-note" hidden></div>
       <div id="infoRotationSuggestion" class="info-rotation-suggestion" hidden></div>
+      <div id="infoCompanionSection" class="info-companion-section" hidden>
+        <p class="info-fiche-title">🤝 Voisinage</p>
+        <div id="infoCompanionList" class="info-companion-list"></div>
+      </div>
 
       <p class="info-fiche-title">Conseils généraux pour <span id="infoFicheeSpeciesName"></span></p>
       <div id="infoFiche">
@@ -245,12 +258,42 @@
 
       <p id="infoNotesBlock" class="info-notes" hidden></p>
 
+      <div class="info-section-block">
+        <p class="info-fiche-title">📷 Photos</p>
+        <div id="infoPhotoGrid" class="info-photo-grid"></div>
+        <input id="photoFileInput" type="file" accept="image/*" capture="environment" hidden>
+        <button id="addPhotoBtn" class="btn btn-secondary" type="button">📷 Ajouter une photo</button>
+      </div>
+
+      <div class="info-section-block">
+        <p class="info-fiche-title">🧺 Carnet de récolte</p>
+        <div id="harvestSummary" class="harvest-summary" hidden></div>
+        <div id="harvestList" class="memo-list"></div>
+        <div id="harvestEmpty" class="empty-sub" style="margin:4px 0 0;" hidden>Aucune récolte enregistrée.</div>
+        <div class="harvest-add-row">
+          <input id="harvestQty" type="number" min="0" step="0.1" placeholder="Quantité" inputmode="decimal">
+          <select id="harvestUnit">
+            <option value="kg">kg</option>
+            <option value="g">g</option>
+            <option value="pièces">pièces</option>
+            <option value="poignées">poignées</option>
+          </select>
+          <button id="harvestAddBtn" class="btn btn-primary" type="button">Ajouter</button>
+        </div>
+      </div>
+
     </div>
     <div class="modal-footer">
       <button id="infoLockBtn" class="btn btn-secondary">🔒 Verrouiller</button>
       <button id="infoEditBtn" class="btn btn-primary">Modifier la planche</button>
     </div>
   </div>
+</div>
+
+<!-- LIGHTBOX PHOTO -->
+<div id="photoLightbox" class="photo-lightbox" hidden>
+  <button id="photoLightboxClose" class="photo-lightbox-close" aria-label="Fermer">✕</button>
+  <img id="photoLightboxImg" src="" alt="Photo de la planche">
 </div>
 
 <!-- MODALE MÉMO -->
@@ -404,6 +447,6 @@
 
 <div id="toast" class="toast" hidden></div>
 
-<script src="app.js?v=22"></script>
+<script src="app.js?v=23"></script>
 </body>
 </html>

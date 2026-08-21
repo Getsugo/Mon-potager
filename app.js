@@ -219,6 +219,48 @@
     return PLANT_INFO[zone.plantId] || null;
   }
 
+  // Périodes de semis/plantation et de récolte par mois (1=janvier … 12=décembre),
+  // dérivées des mêmes informations que la fiche culture, pour les rappels du mois.
+  const PLANT_MONTHS = {
+    tomate: { semis: [2, 3, 4, 5], recolte: [7, 8, 9, 10] },
+    courgette: { semis: [4, 5, 6], recolte: [7, 8, 9] },
+    patate: { semis: [3, 4], recolte: [6, 7, 8, 9] },
+    carotte: { semis: [3, 4, 5, 6, 7], recolte: [6, 7, 8, 9, 10] },
+    salade: { semis: [2, 3, 4, 5, 6, 7, 8, 9], recolte: [3, 4, 5, 6, 7, 8, 9, 10] },
+    oignon: { semis: [3, 4, 10, 11], recolte: [7, 8] },
+    fraise: { semis: [3, 8, 9, 10], recolte: [5, 6, 7] },
+    haricot: { semis: [5, 6, 7], recolte: [7, 8, 9] },
+    poivron: { semis: [2, 3], recolte: [7, 8, 9, 10] },
+    radis: { semis: [3, 4, 5, 6, 7, 8, 9], recolte: [3, 4, 5, 6, 7, 8, 9, 10] },
+    courge: { semis: [4, 5], recolte: [9, 10] },
+    aubergine: { semis: [2, 3], recolte: [7, 8, 9, 10] },
+    ail: { semis: [10, 11, 2, 3], recolte: [6, 7] },
+    petitpois: { semis: [2, 3, 4, 5, 9], recolte: [5, 6, 7] },
+    herbes: { semis: [4, 5], recolte: [5, 6, 7, 8, 9, 10] },
+  };
+
+  const MONTH_NAMES = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+
+  // Rappels du mois en cours : semis à prévoir (planches pas encore datées) et
+  // récoltes probables, en croisant la date d'aujourd'hui avec les planches
+  // de l'année active.
+  function computeMonthlyTasks() {
+    const month = new Date().getMonth() + 1;
+    const tasks = [];
+    state.zones.forEach(zone => {
+      const months = PLANT_MONTHS[zone.plantId];
+      if (!months) return;
+      const plant = getPlant(zone);
+      if (months.recolte.includes(month)) {
+        tasks.push({ type: "recolte", zone: zone, plant: plant });
+      }
+      if (months.semis.includes(month) && !zone.date) {
+        tasks.push({ type: "semis", zone: zone, plant: plant });
+      }
+    });
+    return tasks;
+  }
+
   /* ===================== Rotation des cultures ===================== */
   // Familles botaniques : la même famille épuise/attire les mêmes éléments du sol
   // et les mêmes maladies/parasites, d'où l'intérêt de ne pas la replanter au même
@@ -330,7 +372,54 @@
     return { family: family, prevLabel: prevYear.label, plantNames: names };
   }
 
-  /* ===================== Météo ===================== */
+  /* ===================== Associations de cultures (compagnonnage) ===================== */
+  // Bonnes et mauvaises associations bien établies en jardinage. Limité aux paires
+  // documentées de façon assez consensuelle pour rester fiable.
+  const GOOD_COMPANIONS = [
+    ["tomate", "carotte"], ["tomate", "oignon"], ["tomate", "herbes"],
+    ["carotte", "oignon"], ["carotte", "radis"], ["carotte", "salade"], ["carotte", "petitpois"], ["carotte", "ail"],
+    ["haricot", "carotte"], ["haricot", "radis"], ["haricot", "patate"], ["haricot", "courgette"],
+    ["radis", "salade"], ["petitpois", "radis"],
+    ["fraise", "oignon"], ["fraise", "ail"], ["fraise", "salade"],
+    ["poivron", "herbes"], ["aubergine", "herbes"],
+  ];
+  const BAD_COMPANIONS = [
+    ["tomate", "patate"], // même famille, sensibles au mildiou
+    ["haricot", "oignon"], ["haricot", "ail"],
+    ["petitpois", "oignon"], ["petitpois", "ail"],
+  ];
+
+  function companionRelation(idA, idB) {
+    const isPair = (pair) => (pair[0] === idA && pair[1] === idB) || (pair[0] === idB && pair[1] === idA);
+    if (BAD_COMPANIONS.some(isPair)) return "bad";
+    if (GOOD_COMPANIONS.some(isPair)) return "good";
+    return null;
+  }
+
+  function zonesNearby(a, b, margin) {
+    return (a.x - margin) < (b.x + b.w) && (a.x + a.w + margin) > b.x &&
+           (a.y - margin) < (b.y + b.h) && (a.y + a.h + margin) > b.y;
+  }
+
+  // Renvoie les associations (bonnes/mauvaises) avec les planches proches de `zone`
+  // dans l'année en cours (à ~0,5 m près, distance de voisinage raisonnable).
+  function getCompanionInfo(zone) {
+    const NEARBY_MARGIN = 0.5;
+    const good = [];
+    const bad = [];
+    state.zones.forEach(other => {
+      if (other.id === zone.id) return;
+      if (!zonesNearby(zone, other, NEARBY_MARGIN)) return;
+      const relation = companionRelation(zone.plantId, other.plantId);
+      if (!relation) return;
+      const entry = { zone: other, plant: getPlant(other) };
+      if (relation === "good") good.push(entry);
+      else bad.push(entry);
+    });
+    return { good, bad };
+  }
+
+
   const LOCATION_KEY = "potager-location";
   const WEATHER_CACHE_KEY = "potager-weather-cache";
   const WEATHER_MAX_AGE_MS = 30 * 60 * 1000; // 30 min
@@ -529,6 +618,10 @@
     Object.values(data.years).forEach(y => {
       if (!Array.isArray(y.memo)) y.memo = [];
       if (!Array.isArray(y.budget)) y.budget = [];
+      y.zones.forEach(z => {
+        if (!Array.isArray(z.photos)) z.photos = [];
+        if (!Array.isArray(z.harvest)) z.harvest = [];
+      });
     });
     return data;
   }
@@ -699,6 +792,20 @@
   const infoWeatherNote = el("infoWeatherNote");
   const infoRotationNote = el("infoRotationNote");
   const infoRotationSuggestion = el("infoRotationSuggestion");
+  const infoCompanionSection = el("infoCompanionSection");
+  const infoCompanionList = el("infoCompanionList");
+  const infoPhotoGrid = el("infoPhotoGrid");
+  const photoFileInput = el("photoFileInput");
+  const addPhotoBtn = el("addPhotoBtn");
+  const photoLightbox = el("photoLightbox");
+  const photoLightboxImg = el("photoLightboxImg");
+  const photoLightboxClose = el("photoLightboxClose");
+  const harvestSummary = el("harvestSummary");
+  const harvestList = el("harvestList");
+  const harvestEmpty = el("harvestEmpty");
+  const harvestQty = el("harvestQty");
+  const harvestUnit = el("harvestUnit");
+  const harvestAddBtn = el("harvestAddBtn");
 
   const locationLabelSettings = el("locationLabelSettings");
   const useMyLocationBtn = el("useMyLocationBtn");
@@ -946,7 +1053,47 @@
     state.zones.forEach(zone => {
       gardenCanvas.appendChild(buildZoneEl(zone));
     });
+    renderTasksBanner();
   }
+
+  /* ===================== Bannière des tâches du mois ===================== */
+  const tasksBanner = el("tasksBanner");
+  const tasksBannerToggle = el("tasksBannerToggle");
+  const tasksBannerMonth = el("tasksBannerMonth");
+  const tasksBannerCount = el("tasksBannerCount");
+  const tasksBannerList = el("tasksBannerList");
+
+  function renderTasksBanner() {
+    const tasks = computeMonthlyTasks();
+    if (tasks.length === 0) {
+      tasksBanner.hidden = true;
+      return;
+    }
+    tasksBanner.hidden = false;
+    const month = new Date().getMonth() + 1;
+    tasksBannerMonth.textContent = MONTH_NAMES[month - 1];
+    tasksBannerCount.textContent = tasks.length;
+
+    tasksBannerList.innerHTML = "";
+    tasks.forEach(task => {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "task-row";
+      const label = task.zone.variety ? `${task.plant.name} (${task.zone.variety})` : task.plant.name;
+      if (task.type === "recolte") {
+        row.innerHTML = `<span class="task-row-emoji">🧺</span><span>C'est la période de récolte pour tes <strong>${escapeHtml(label)}</strong>.</span>`;
+      } else {
+        row.innerHTML = `<span class="task-row-emoji">🌱</span><span>C'est le moment de semer/planter tes <strong>${escapeHtml(label)}</strong> (pas encore de date de plantation notée).</span>`;
+      }
+      row.addEventListener("click", () => openInfoModal(task.zone.id));
+      tasksBannerList.appendChild(row);
+    });
+  }
+
+  tasksBannerToggle.addEventListener("click", () => {
+    const isOpen = tasksBanner.classList.toggle("open");
+    tasksBannerList.hidden = !isOpen;
+  });
 
   function buildZoneEl(zone) {
     const plant = getPlant(zone);
@@ -1262,6 +1409,9 @@
     updateInfoWeatherNote();
     updateInfoRotationNote(zone);
     updateInfoRotationSuggestion(zone);
+    updateInfoCompanionSection(zone);
+    renderPhotoGrid(zone);
+    renderHarvestList(zone);
     updateInfoLockBtn(zone);
   }
 
@@ -1296,6 +1446,161 @@
     infoRotationSuggestion.hidden = false;
     infoRotationSuggestion.innerHTML = `📅 <span><strong>La prochaine fois ici :</strong> plutôt des ${escapeHtml(suggestion.nextGroupLabel)} (ex : ${escapeHtml(suggestion.examples)}), après ces ${escapeHtml(suggestion.currentGroupLabel)}.</span>`;
   }
+
+  function updateInfoCompanionSection(zone) {
+    const { good, bad } = getCompanionInfo(zone);
+    if (good.length === 0 && bad.length === 0) {
+      infoCompanionSection.hidden = true;
+      return;
+    }
+    infoCompanionSection.hidden = false;
+    infoCompanionList.innerHTML = "";
+    bad.forEach(entry => {
+      const row = document.createElement("div");
+      row.className = "companion-row bad";
+      const label = entry.zone.variety ? `${entry.plant.name} (${entry.zone.variety})` : entry.plant.name;
+      row.innerHTML = `⚠️ <span>Association déconseillée avec <strong>${escapeHtml(label)}</strong> à proximité.</span>`;
+      infoCompanionList.appendChild(row);
+    });
+    good.forEach(entry => {
+      const row = document.createElement("div");
+      row.className = "companion-row good";
+      const label = entry.zone.variety ? `${entry.plant.name} (${entry.zone.variety})` : entry.plant.name;
+      row.innerHTML = `🤝 <span>Bonne association avec <strong>${escapeHtml(label)}</strong> à proximité.</span>`;
+      infoCompanionList.appendChild(row);
+    });
+  }
+
+  /* ===================== Photos par planche ===================== */
+  function renderPhotoGrid(zone) {
+    infoPhotoGrid.innerHTML = "";
+    (zone.photos || []).slice().reverse().forEach(photo => {
+      const thumb = document.createElement("div");
+      thumb.className = "info-photo-thumb";
+      thumb.innerHTML = `
+        <img src="${photo.dataUrl}" alt="Photo du ${formatDate(photo.date)}">
+        <span class="photo-date">${formatDate(photo.date)}</span>
+        <button class="photo-delete" aria-label="Supprimer la photo">✕</button>
+      `;
+      thumb.querySelector("img").addEventListener("click", () => openPhotoLightbox(photo.dataUrl));
+      thumb.querySelector(".photo-delete").addEventListener("click", (e) => {
+        e.stopPropagation();
+        zone.photos = zone.photos.filter(p => p.id !== photo.id);
+        saveState();
+        renderPhotoGrid(zone);
+      });
+      infoPhotoGrid.appendChild(thumb);
+    });
+  }
+
+  function openPhotoLightbox(dataUrl) {
+    photoLightboxImg.src = dataUrl;
+    photoLightbox.hidden = false;
+  }
+  photoLightboxClose.addEventListener("click", () => { photoLightbox.hidden = true; photoLightboxImg.src = ""; });
+  photoLightbox.addEventListener("click", (e) => { if (e.target === photoLightbox) { photoLightbox.hidden = true; photoLightboxImg.src = ""; } });
+
+  function compressImageFile(file, maxDim, quality) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = () => { img.src = reader.result; };
+      reader.onerror = reject;
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
+        else if (h >= w && h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  addPhotoBtn.addEventListener("click", () => photoFileInput.click());
+  photoFileInput.addEventListener("change", async () => {
+    const file = photoFileInput.files && photoFileInput.files[0];
+    photoFileInput.value = "";
+    if (!file) return;
+    const zone = state.zones.find(z => z.id === infoZoneId);
+    if (!zone) return;
+    try {
+      addPhotoBtn.disabled = true;
+      addPhotoBtn.textContent = "Traitement en cours…";
+      const dataUrl = await compressImageFile(file, 900, 0.72);
+      if (!Array.isArray(zone.photos)) zone.photos = [];
+      zone.photos.push({ id: uid(), date: new Date().toISOString().slice(0, 10), dataUrl: dataUrl });
+      saveState();
+      renderPhotoGrid(zone);
+      showToast("Photo ajoutée");
+    } catch (e) {
+      showToast("Impossible d'ajouter cette photo (mémoire pleine ?)");
+    } finally {
+      addPhotoBtn.disabled = false;
+      addPhotoBtn.textContent = "📷 Ajouter une photo";
+    }
+  });
+
+  /* ===================== Carnet de récolte ===================== */
+  function renderHarvestList(zone) {
+    const entries = zone.harvest || [];
+    harvestEmpty.hidden = entries.length > 0;
+
+    if (entries.length > 0) {
+      const totals = {};
+      entries.forEach(h => { totals[h.unit] = (totals[h.unit] || 0) + h.qty; });
+      harvestSummary.hidden = false;
+      harvestSummary.innerHTML = Object.keys(totals).map(unit => {
+        const v = totals[unit];
+        const vTxt = (v % 1 === 0 ? v : v.toFixed(1)).toString().replace(".", ",");
+        return `<span class="budget-chip">🧺 ${vTxt} ${escapeHtml(unit)}</span>`;
+      }).join("");
+    } else {
+      harvestSummary.hidden = true;
+      harvestSummary.innerHTML = "";
+    }
+
+    harvestList.innerHTML = "";
+    const sorted = entries.slice().sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    sorted.forEach(entry => {
+      const row = document.createElement("div");
+      row.className = "memo-item";
+      const qtyTxt = (entry.qty % 1 === 0 ? entry.qty : entry.qty.toFixed(1)).toString().replace(".", ",");
+      row.innerHTML = `
+        <span class="harvest-item-qty">${qtyTxt} ${escapeHtml(entry.unit)}</span>
+        <div class="budget-item-info">
+          <div class="budget-item-date">${formatDate(entry.date)}</div>
+        </div>
+        <button class="memo-item-delete" aria-label="Supprimer">✕</button>
+      `;
+      row.querySelector(".memo-item-delete").addEventListener("click", () => {
+        zone.harvest = zone.harvest.filter(h => h.id !== entry.id);
+        saveState();
+        renderHarvestList(zone);
+      });
+      harvestList.appendChild(row);
+    });
+  }
+
+  harvestAddBtn.addEventListener("click", () => {
+    const qty = parseFloat(harvestQty.value);
+    if (isNaN(qty) || qty <= 0) {
+      showToast("Indique une quantité valide");
+      return;
+    }
+    const zone = state.zones.find(z => z.id === infoZoneId);
+    if (!zone) return;
+    if (!Array.isArray(zone.harvest)) zone.harvest = [];
+    zone.harvest.push({ id: uid(), qty: qty, unit: harvestUnit.value, date: new Date().toISOString().slice(0, 10) });
+    saveState();
+    harvestQty.value = "";
+    renderHarvestList(zone);
+    showToast("Récolte enregistrée");
+  });
 
   function updateInfoLockBtn(zone) {
     infoLockBtn.textContent = zone.locked ? "🔓 Déverrouiller" : "🔒 Verrouiller";
@@ -1335,7 +1640,7 @@
       selectedPlantId = zone.plantId;
     } else {
       const freeSpot = findFreeSpot();
-      zone = { x: freeSpot.x, y: freeSpot.y, w: 1, h: 1, plantId: selectedPlantId || PLANTS[0].id, variety: "", date: "", notes: "", locked: false };
+      zone = { x: freeSpot.x, y: freeSpot.y, w: 1, h: 1, plantId: selectedPlantId || PLANTS[0].id, variety: "", date: "", notes: "", locked: false, photos: [], harvest: [] };
       zoneModalTitle.textContent = "Nouvelle zone";
       zoneDeleteBtn.hidden = true;
       selectedPlantId = PLANTS[0].id;
