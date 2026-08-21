@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Mon Potager</title>
 <meta name="theme-color" content="#4A3626">
-<link rel="manifest" href="manifest.json?v=24">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=24">
-<link rel="icon" href="icon-192.png?v=24">
-<link rel="stylesheet" href="style.css?v=24">
+<link rel="manifest" href="manifest.json?v=25">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=25">
+<link rel="icon" href="icon-192.png?v=25">
+<link rel="stylesheet" href="style.css?v=25">
 </head>
 <body>
 
 <header class="topbar">
   <div class="topbar-title">
-    <img class="logo-mark" src="icon-192.png?v=24" alt="" aria-hidden="true">
+    <img class="logo-mark" src="icon-192.png?v=25" alt="" aria-hidden="true">
     <h1>Mon Potager</h1>
   </div>
   <div class="topbar-actions">
@@ -211,14 +211,24 @@
 
       <div id="infoWeatherNote" class="info-weather-note" hidden></div>
 
-      <div id="infoRotationNote" class="info-rotation-note" hidden></div>
-      <div id="infoRotationSuggestion" class="info-rotation-suggestion" hidden></div>
-      <div id="infoCompanionSection" class="info-companion-section" hidden>
-        <p class="info-fiche-title">🤝 Voisinage</p>
-        <div id="infoCompanionList" class="info-companion-list"></div>
-      </div>
+      <details id="rotationDetails" class="fiche-details" hidden>
+        <summary><span>🔄 Rotation des cultures</span><span class="fiche-details-chev">▾</span></summary>
+        <div class="fiche-details-body">
+          <div id="infoRotationNote" class="info-rotation-note" hidden></div>
+          <div id="infoRotationSuggestion" class="info-rotation-suggestion" hidden></div>
+        </div>
+      </details>
 
-      <p class="info-fiche-title">Conseils généraux pour <span id="infoFicheeSpeciesName"></span></p>
+      <details id="companionDetails" class="fiche-details">
+        <summary><span>🤝 Voisinage</span><span class="fiche-details-chev">▾</span></summary>
+        <div class="fiche-details-body">
+          <div id="infoCompanionList" class="info-companion-list"></div>
+        </div>
+      </details>
+
+      <details id="ficheDetails" class="fiche-details" hidden>
+        <summary><span>🌱 Conseils généraux pour <span id="infoFicheeSpeciesName"></span></span><span class="fiche-details-chev">▾</span></summary>
+        <div class="fiche-details-body">
       <div id="infoFiche">
         <div class="info-grid">
           <div class="info-item">
@@ -255,32 +265,38 @@
           <p id="infoConseil" class="info-tip-text">—</p>
         </div>
       </div>
+        </div>
+      </details>
 
       <p id="infoNotesBlock" class="info-notes" hidden></p>
 
-      <div class="info-section-block">
-        <p class="info-fiche-title">📷 Photos</p>
-        <div id="infoPhotoGrid" class="info-photo-grid"></div>
-        <input id="photoFileInput" type="file" accept="image/*" capture="environment" hidden>
-        <button id="addPhotoBtn" class="btn btn-secondary" type="button">📷 Ajouter une photo</button>
-      </div>
-
-      <div class="info-section-block">
-        <p class="info-fiche-title">🧺 Carnet de récolte</p>
-        <div id="harvestSummary" class="harvest-summary" hidden></div>
-        <div id="harvestList" class="memo-list"></div>
-        <div id="harvestEmpty" class="empty-sub" style="margin:4px 0 0;" hidden>Aucune récolte enregistrée.</div>
-        <div class="harvest-add-row">
-          <input id="harvestQty" type="number" min="0" step="0.1" placeholder="Quantité" inputmode="decimal">
-          <select id="harvestUnit">
-            <option value="kg">kg</option>
-            <option value="g">g</option>
-            <option value="pièces">pièces</option>
-            <option value="poignées">poignées</option>
-          </select>
-          <button id="harvestAddBtn" class="btn btn-primary" type="button">Ajouter</button>
+      <details id="photosDetails" class="fiche-details">
+        <summary><span>📷 Photos</span><span id="photosCountBadge" class="fiche-details-badge" hidden>0</span><span class="fiche-details-chev">▾</span></summary>
+        <div class="fiche-details-body">
+          <div id="infoPhotoGrid" class="info-photo-grid"></div>
+          <input id="photoFileInput" type="file" accept="image/*" capture="environment" hidden>
+          <button id="addPhotoBtn" class="btn btn-secondary" type="button">📷 Ajouter une photo</button>
         </div>
-      </div>
+      </details>
+
+      <details id="harvestDetails" class="fiche-details">
+        <summary><span>🧺 Carnet de récolte</span><span id="harvestCountBadge" class="fiche-details-badge" hidden>0</span><span class="fiche-details-chev">▾</span></summary>
+        <div class="fiche-details-body">
+          <div id="harvestSummary" class="harvest-summary" hidden></div>
+          <div id="harvestList" class="memo-list"></div>
+          <div id="harvestEmpty" class="empty-sub" style="margin:4px 0 0;" hidden>Aucune récolte enregistrée.</div>
+          <div class="harvest-add-row">
+            <input id="harvestQty" type="number" min="0" step="0.1" placeholder="Quantité" inputmode="decimal">
+            <select id="harvestUnit">
+              <option value="kg">kg</option>
+              <option value="g">g</option>
+              <option value="pièces">pièces</option>
+              <option value="poignées">poignées</option>
+            </select>
+            <button id="harvestAddBtn" class="btn btn-primary" type="button">Ajouter</button>
+          </div>
+        </div>
+      </details>
 
     </div>
     <div class="modal-footer">
@@ -447,6 +463,6 @@
 
 <div id="toast" class="toast" hidden></div>
 
-<script src="app.js?v=24"></script>
+<script src="app.js?v=25"></script>
 </body>
 </html>

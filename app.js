@@ -793,14 +793,19 @@
   const infoWeatherNote = el("infoWeatherNote");
   const infoRotationNote = el("infoRotationNote");
   const infoRotationSuggestion = el("infoRotationSuggestion");
-  const infoCompanionSection = el("infoCompanionSection");
+  const rotationDetails = el("rotationDetails");
+  const companionDetails = el("companionDetails");
   const infoCompanionList = el("infoCompanionList");
+  const photosDetails = el("photosDetails");
+  const photosCountBadge = el("photosCountBadge");
   const infoPhotoGrid = el("infoPhotoGrid");
   const photoFileInput = el("photoFileInput");
   const addPhotoBtn = el("addPhotoBtn");
   const photoLightbox = el("photoLightbox");
   const photoLightboxImg = el("photoLightboxImg");
   const photoLightboxClose = el("photoLightboxClose");
+  const harvestDetails = el("harvestDetails");
+  const harvestCountBadge = el("harvestCountBadge");
   const harvestSummary = el("harvestSummary");
   const harvestList = el("harvestList");
   const harvestEmpty = el("harvestEmpty");
@@ -824,7 +829,8 @@
   const infoZoneCard = el("infoZoneCard");
   const infoFiche = el("infoFiche");
   const infoFicheeSpeciesName = el("infoFicheeSpeciesName");
-  const infoFicheTitle = document.querySelector(".info-fiche-title");
+  const ficheDetails = el("ficheDetails");
+  const infoFicheTitle = ficheDetails;
   const infoSoleil = el("infoSoleil");
   const infoArrosage = el("infoArrosage");
   const infoChaleur = el("infoChaleur");
@@ -1408,11 +1414,13 @@
 
     infoModalOverlay.hidden = false;
     updateInfoWeatherNote();
-    updateInfoRotationNote(zone);
-    updateInfoRotationSuggestion(zone);
+    updateRotationDetails(zone);
     updateInfoCompanionSection(zone);
     renderPhotoGrid(zone);
     renderHarvestList(zone);
+    photosDetails.open = false;
+    harvestDetails.open = false;
+    ficheDetails.open = false;
     updateInfoLockBtn(zone);
   }
 
@@ -1420,12 +1428,12 @@
     const family = PLANT_FAMILY[zone.plantId];
     if (!family) {
       infoRotationNote.hidden = true;
-      return;
+      return false;
     }
     const prevId = findPreviousYearId();
     if (!prevId) {
       infoRotationNote.hidden = true;
-      return;
+      return false;
     }
     const warning = getRotationWarning(zone);
     infoRotationNote.hidden = false;
@@ -1436,21 +1444,29 @@
       infoRotationNote.className = "info-rotation-note ok";
       infoRotationNote.innerHTML = `✅ <strong>Rotation :</strong> pas de culture de la famille des ${escapeHtml(family)} à cet endroit en ${escapeHtml(yearsData.years[prevId].label)}.`;
     }
+    return !!warning;
   }
 
   function updateInfoRotationSuggestion(zone) {
     const suggestion = getNextRotationSuggestion(zone);
     if (!suggestion) {
       infoRotationSuggestion.hidden = true;
-      return;
+      return false;
     }
     infoRotationSuggestion.hidden = false;
     infoRotationSuggestion.innerHTML = `📅 <span><strong>La prochaine fois ici :</strong> plutôt des ${escapeHtml(suggestion.nextGroupLabel)} (ex : ${escapeHtml(suggestion.examples)}), après ces ${escapeHtml(suggestion.currentGroupLabel)}.</span>`;
+    return true;
+  }
+
+  function updateRotationDetails(zone) {
+    const hasWarning = updateInfoRotationNote(zone);
+    updateInfoRotationSuggestion(zone);
+    rotationDetails.hidden = infoRotationNote.hidden && infoRotationSuggestion.hidden;
+    rotationDetails.open = hasWarning;
   }
 
   function updateInfoCompanionSection(zone) {
     const { good, bad, neutral } = getCompanionInfo(zone);
-    infoCompanionSection.hidden = false;
     infoCompanionList.innerHTML = "";
     bad.forEach(entry => {
       const row = document.createElement("div");
@@ -1477,12 +1493,16 @@
       }
       infoCompanionList.appendChild(row);
     }
+    companionDetails.open = bad.length > 0;
   }
 
   /* ===================== Photos par planche ===================== */
   function renderPhotoGrid(zone) {
     infoPhotoGrid.innerHTML = "";
-    (zone.photos || []).slice().reverse().forEach(photo => {
+    const photos = zone.photos || [];
+    photosCountBadge.hidden = photos.length === 0;
+    photosCountBadge.textContent = photos.length;
+    photos.slice().reverse().forEach(photo => {
       const thumb = document.createElement("div");
       thumb.className = "info-photo-thumb";
       thumb.innerHTML = `
@@ -1557,6 +1577,8 @@
   function renderHarvestList(zone) {
     const entries = zone.harvest || [];
     harvestEmpty.hidden = entries.length > 0;
+    harvestCountBadge.hidden = entries.length === 0;
+    harvestCountBadge.textContent = entries.length;
 
     if (entries.length > 0) {
       const totals = {};
