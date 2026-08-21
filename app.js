@@ -376,10 +376,10 @@
   // Bonnes et mauvaises associations bien établies en jardinage. Limité aux paires
   // documentées de façon assez consensuelle pour rester fiable.
   const GOOD_COMPANIONS = [
-    ["tomate", "carotte"], ["tomate", "oignon"], ["tomate", "herbes"],
+    ["tomate", "carotte"], ["tomate", "oignon"], ["tomate", "herbes"], ["tomate", "radis"], ["tomate", "ail"],
     ["carotte", "oignon"], ["carotte", "radis"], ["carotte", "salade"], ["carotte", "petitpois"], ["carotte", "ail"],
-    ["haricot", "carotte"], ["haricot", "radis"], ["haricot", "patate"], ["haricot", "courgette"],
-    ["radis", "salade"], ["petitpois", "radis"],
+    ["haricot", "carotte"], ["haricot", "radis"], ["haricot", "patate"], ["haricot", "courgette"], ["haricot", "courge"],
+    ["radis", "salade"], ["radis", "courgette"], ["petitpois", "radis"],
     ["fraise", "oignon"], ["fraise", "ail"], ["fraise", "salade"],
     ["poivron", "herbes"], ["aubergine", "herbes"],
   ];
@@ -407,16 +407,17 @@
     const NEARBY_MARGIN = 0.5;
     const good = [];
     const bad = [];
+    const neutral = [];
     state.zones.forEach(other => {
       if (other.id === zone.id) return;
       if (!zonesNearby(zone, other, NEARBY_MARGIN)) return;
       const relation = companionRelation(zone.plantId, other.plantId);
-      if (!relation) return;
       const entry = { zone: other, plant: getPlant(other) };
       if (relation === "good") good.push(entry);
-      else bad.push(entry);
+      else if (relation === "bad") bad.push(entry);
+      else neutral.push(entry);
     });
-    return { good, bad };
+    return { good, bad, neutral };
   }
 
 
@@ -1448,11 +1449,7 @@
   }
 
   function updateInfoCompanionSection(zone) {
-    const { good, bad } = getCompanionInfo(zone);
-    if (good.length === 0 && bad.length === 0) {
-      infoCompanionSection.hidden = true;
-      return;
-    }
+    const { good, bad, neutral } = getCompanionInfo(zone);
     infoCompanionSection.hidden = false;
     infoCompanionList.innerHTML = "";
     bad.forEach(entry => {
@@ -1469,6 +1466,17 @@
       row.innerHTML = `🤝 <span>Bonne association avec <strong>${escapeHtml(label)}</strong> à proximité.</span>`;
       infoCompanionList.appendChild(row);
     });
+    if (good.length === 0 && bad.length === 0) {
+      const row = document.createElement("div");
+      row.className = "companion-row neutral";
+      if (neutral.length === 0) {
+        row.innerHTML = `ℹ️ <span>Aucune autre planche à moins de 0,5 m pour l'instant.</span>`;
+      } else {
+        const names = Array.from(new Set(neutral.map(e => e.plant.name))).join(", ");
+        row.innerHTML = `ℹ️ <span>Pas d'association connue avec ${escapeHtml(names)} à proximité (probablement neutre).</span>`;
+      }
+      infoCompanionList.appendChild(row);
+    }
   }
 
   /* ===================== Photos par planche ===================== */

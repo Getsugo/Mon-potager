@@ -549,6 +549,7 @@ input[type="color"] { width: 44px; height: 40px; padding: 2px; border: 1px solid
 }
 .companion-row.good { background: color-mix(in srgb, var(--leaf) 12%, var(--bg-card)); border: 1px solid var(--leaf-light); color: var(--ink); }
 .companion-row.bad { background: color-mix(in srgb, var(--danger) 12%, var(--bg-card)); border: 1px solid var(--danger); color: var(--ink); }
+.companion-row.neutral { background: var(--bg-card-2); border: 1px solid var(--border); color: var(--ink-muted); }
 
 /* ===== Photos ===== */
 .info-photo-grid {
